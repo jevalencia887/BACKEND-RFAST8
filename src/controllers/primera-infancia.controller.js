@@ -42,7 +42,7 @@ try {
     JOIN fac_p_control g ON g.IPS = f.IPS
     JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD
     JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
-    WHERE h.CODIGO = 1600 
+    WHERE h.CODIGO = 1600 AND  a.FECHANAC > CONVERT(datetime, '2017-11-29 12:00:00', 120)
 `
 const resul = await sequelize.query(query, {type: QueryTypes.SELECT});
 console.log(resul);
