@@ -26,10 +26,13 @@ exports.infancia = async (req, res) => {
         a.CODBARES AS CODIGO_BARRIO,
         d.NOMBRE AS COMUNA,
         c.NOMBRE AS BARRIO,
-        a.ETNICO, b.NOMBRE AS PAIS, 
-        h.NOMBRE, j.NOMBRE AS CUPS, 
+        a.ETNICO, 
+        b.NOMBRE AS PAIS, 
+        h.NOMBRE, 
+        j.NOMBRE AS CUPS, 
         f.ATENCION_FACTURA, 
-        f.CODIGO, f.ATENDIDO 
+        f.CODIGO, 
+        f.ATENDIDO 
         FROM fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
         JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
@@ -40,7 +43,7 @@ exports.infancia = async (req, res) => {
         JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
         JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
         WHERE h.CODIGO = 1601 AND  a.FECHANAC > CONVERT(datetime, '2011-11-29 12:00:00', 120)
-        ORDER BY a.NUMDOCUM desc
+        ORDER BY a.NUMDOCUM ASC
         OFFSET ${offset} ROWS
         FETCH NEXT ${limit} ROWS ONLY`;
         const resul = await sequelize.query(query, {type: QueryTypes.SELECT});
