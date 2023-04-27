@@ -10,7 +10,7 @@ const  vejezController = require("../controllers/vejez.controlller");
 const router = Router();
 
 
-//Rutas para Infancia
+//Rutas para Cursos de Vida
 router.get("/primera-infancia", primeraInfanciaController.primeraInfancia);
 router.get("/infancia", InfanciaController.infancia);
 router.get("/adolecencia", adolecenciaController.adolecencia);
