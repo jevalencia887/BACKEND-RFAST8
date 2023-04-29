@@ -13,6 +13,7 @@ const router = Router();
 //Rutas para Cursos de Vida
 router.get("/primera-infancia", primeraInfanciaController.primeraInfancia);
 router.get("/infancia", InfanciaController.infancia);
+router.post("/infancia/buscar", InfanciaController.buscar);
 router.get("/adolecencia", adolecenciaController.adolecencia);
 router.get("/juventud", juventudController.juventud);
 router.get("/adultez", adultezController.adultez);
