@@ -13,11 +13,8 @@ class Server {
 
     middlewares() {
         this.app.use(cors());
-        //this.app.use(express.json());
         this.app.use(express.json({ extende: true, parameterLimit: 10000000000000 , limit: '100000mb'}));
         this.app.use(morgan("dev"));
-        //this.validarHeadres();
-        //this.validarMetodos();
         this.politicaSeguridad();
     }
 
@@ -58,7 +55,7 @@ class Server {
     }
 
     rutas(){
-        this.app.use(require('./routes/test.router'));
+        this.app.use(require('./routes/curso-vida.router'));
     }
         
     listen() {

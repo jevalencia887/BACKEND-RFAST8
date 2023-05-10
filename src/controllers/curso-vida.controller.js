@@ -2,8 +2,11 @@ const { QueryTypes, and } = require('sequelize');
 const sequelize = require('../BD-RFAS8/conexiondb');
 
 
-exports.infancia = async (req, res) => {
+exports.cursoVida = async (req, res) => {
     try {
+        const CODIGO = req.params.CODIGO; 
+        const edadInicial = req.params.edadInicial;
+        const edadFinal = req.params.edadFinal;
         const page = req.query.page || 1;
         const limit = req.query.limit || 10;
         const offset = (page - 1) * limit;
@@ -46,7 +49,10 @@ exports.infancia = async (req, res) => {
         JOIN fac_p_control g ON g.IPS = f.IPS
         JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
         JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
-        WHERE h.CODIGO = 1601 AND  a.FECHANAC > CONVERT(datetime, '2011-11-29 12:00:00', 120)
+        WHERE h.CODIGO = ${CODIGO} AND floor(
+            (cast(convert(varchar(8),getdate(),112) as int)-
+            cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
+            ) BETWEEN ${edadInicial} AND ${edadFinal}
         ORDER BY a.NUMDOCUM ASC
         OFFSET ${offset} ROWS
         FETCH NEXT ${limit} ROWS ONLY`;
@@ -63,7 +69,10 @@ exports.infancia = async (req, res) => {
         JOIN fac_p_control g ON g.IPS = f.IPS
         JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
         JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
-        WHERE h.CODIGO = 1601 AND  a.FECHANAC > CONVERT(datetime, '2011-11-29 12:00:00', 120)`
+        WHERE h.CODIGO = ${CODIGO} AND floor(
+            (cast(convert(varchar(8),getdate(),112) as int)-
+            cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
+            ) BETWEEN ${edadInicial} AND ${edadFinal}`
         const count = await sequelize.query(queryCount, {type: QueryTypes.SELECT});
         
 
@@ -78,7 +87,10 @@ exports.infancia = async (req, res) => {
         JOIN fac_p_control g ON g.IPS = f.IPS
         JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
         JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
-        WHERE (h.CODIGO = 1601 AND  a.FECHANAC > CONVERT(datetime, '2011-11-29 12:00:00', 120)) and (f.ATENDIDO = 1)`
+        WHERE h.CODIGO = ${CODIGO} AND floor(
+            (cast(convert(varchar(8),getdate(),112) as int)-
+            cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
+            ) BETWEEN ${edadInicial} AND ${edadFinal} and f.ATENDIDO = 1`
         const atendidos = await sequelize.query(queryAtendidos, {type: QueryTypes.SELECT});
         
 
@@ -93,9 +105,11 @@ exports.infancia = async (req, res) => {
         JOIN fac_p_control g ON g.IPS = f.IPS
         JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
         JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
-        WHERE (h.CODIGO = 1601 AND  a.FECHANAC > CONVERT(datetime, '2011-11-29 12:00:00', 120)) and (f.ATENDIDO = 0)`
+        WHERE h.CODIGO = ${CODIGO} AND floor(
+            (cast(convert(varchar(8),getdate(),112) as int)-
+            cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
+            ) BETWEEN ${edadInicial} AND ${edadFinal} and f.ATENDIDO = 0`
         const noAtendidos = await sequelize.query(querySinAtencion, {type: QueryTypes.SELECT});
-       
         
         if (!resul.length) {
             return res.status(404).json({ msg: 'No se encontraron registros'})
@@ -119,6 +133,9 @@ exports.infancia = async (req, res) => {
 
 exports.buscar = async (req, res) => {
     try {
+        const CODIGO = req.params.CODIGO; 
+        const edadInicial = req.params.edadInicial;
+        const edadFinal = req.params.edadFinal;
         const page = req.query.page || 1;
         const limit = req.query.limit || 10;
         const offset = (page - 1) * limit;
@@ -176,7 +193,10 @@ exports.buscar = async (req, res) => {
         JOIN fac_p_control g ON g.IPS = f.IPS
         JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
         JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
-        WHERE h.CODIGO = 1601 AND  a.FECHANAC > CONVERT(datetime, '2011-11-29 12:00:00', 120)
+        WHERE h.CODIGO = ${CODIGO} AND floor(
+            (cast(convert(varchar(8),getdate(),112) as int)-
+            cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
+            ) BETWEEN ${edadInicial} AND ${edadFinal}
         ${it}
         ORDER BY a.NUMDOCUM ASC
         OFFSET ${offset} ROWS
@@ -194,7 +214,10 @@ exports.buscar = async (req, res) => {
         JOIN fac_p_control g ON g.IPS = f.IPS
         JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
         JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
-        WHERE h.CODIGO = 1601 AND  a.FECHANAC > CONVERT(datetime, '2011-11-29 12:00:00', 120) ${it}`
+        WHERE h.CODIGO = ${CODIGO} AND floor(
+            (cast(convert(varchar(8),getdate(),112) as int)-
+            cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
+            ) BETWEEN ${edadInicial} AND ${edadFinal} ${it}`
         const count = await sequelize.query(queryCount, {type: QueryTypes.SELECT});
         
 
@@ -209,7 +232,10 @@ exports.buscar = async (req, res) => {
         JOIN fac_p_control g ON g.IPS = f.IPS
         JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
         JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
-        WHERE (h.CODIGO = 1601 AND  a.FECHANAC > CONVERT(datetime, '2011-11-29 12:00:00', 120)) and (f.ATENDIDO = 1) ${it}`
+        WHERE h.CODIGO = ${CODIGO} AND floor(
+            (cast(convert(varchar(8),getdate(),112) as int)-
+            cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
+            ) BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENDIDO = 1 ${it}`
         const atendidos = await sequelize.query(queryAtendidos, {type: QueryTypes.SELECT});
         //console.log(atendidos);
 
@@ -224,7 +250,10 @@ exports.buscar = async (req, res) => {
         JOIN fac_p_control g ON g.IPS = f.IPS
         JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
         JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
-        WHERE (h.CODIGO = 1601 AND  a.FECHANAC > CONVERT(datetime, '2011-11-29 12:00:00', 120)) and (f.ATENDIDO = 0) ${it}`
+        WHERE h.CODIGO = ${CODIGO} AND floor(
+            (cast(convert(varchar(8),getdate(),112) as int)-
+            cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
+            ) BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENDIDO = 0 ${it}`
         const noAtendidos = await sequelize.query(querySinAtencion, {type: QueryTypes.SELECT});
         //console.log(noAtendidos);
         
