@@ -1,5 +1,5 @@
 const { QueryTypes, and } = require('sequelize');
-const sequelize = require('../BD-RFAS8/conexiondb');
+const {sequelize} = require('../BD-RFAS8/conexiondb');
 
 
 exports.cursoVida = async (req, res) => {

@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+const { sequelize1 } = require("./BD-RFAS8/conexiondb");
 
 class Server {
     constructor() {
@@ -9,7 +10,20 @@ class Server {
         this.port = process.env.PORT;
         this.middlewares();
         this.rutas();
+        this.iniciarDB();
     }
+
+    async iniciarDB() {
+        try {
+          sequelize1.authenticate(/* { alter: true } */).then( () => {
+            console.log( 'Conexion exitosa');
+          })
+          
+        } catch (error) {
+          console.error("Unable to connect to the database:", error);
+          console.log(error);
+        }
+      }
 
     middlewares() {
         this.app.use(cors());
