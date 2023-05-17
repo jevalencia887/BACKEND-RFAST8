@@ -197,7 +197,7 @@ exports.buscar = async (req, res) => {
             (cast(convert(varchar(8),getdate(),112) as int)-
             cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
             ) BETWEEN ${edadInicial} AND ${edadFinal}
-        ${it}
+        ${it != "" ? 'AND ('+ it.substring(3, it.length)+')' : 'a.NUMDOCUM'}
         ORDER BY a.NUMDOCUM ASC
         OFFSET ${offset} ROWS
         FETCH NEXT ${limit} ROWS ONLY`;
@@ -217,7 +217,7 @@ exports.buscar = async (req, res) => {
         WHERE h.CODIGO = ${CODIGO} AND floor(
             (cast(convert(varchar(8),getdate(),112) as int)-
             cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
-            ) BETWEEN ${edadInicial} AND ${edadFinal} ${it}`
+            ) BETWEEN ${edadInicial} AND ${edadFinal} ${it != "" ? 'AND ('+ it.substring(3, it.length)+')' : ''}`
         const count = await sequelize.query(queryCount, {type: QueryTypes.SELECT});
         
 
@@ -235,7 +235,7 @@ exports.buscar = async (req, res) => {
         WHERE h.CODIGO = ${CODIGO} AND floor(
             (cast(convert(varchar(8),getdate(),112) as int)-
             cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
-            ) BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENDIDO = 1 ${it}`
+            ) BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENDIDO = 1 ${it != "" ? 'AND ('+ it.substring(3, it.length)+')' : ''}`
         const atendidos = await sequelize.query(queryAtendidos, {type: QueryTypes.SELECT});
         //console.log(atendidos);
 
@@ -253,7 +253,7 @@ exports.buscar = async (req, res) => {
         WHERE h.CODIGO = ${CODIGO} AND floor(
             (cast(convert(varchar(8),getdate(),112) as int)-
             cast(convert(varchar(8),e.FECHANAC,112) as int) ) / 10000
-            ) BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENDIDO = 0 ${it}`
+            ) BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENDIDO = 0 ${it != "" ? 'AND ('+ it.substring(3, it.length)+')' : ''}`
         const noAtendidos = await sequelize.query(querySinAtencion, {type: QueryTypes.SELECT});
         //console.log(noAtendidos);
         
