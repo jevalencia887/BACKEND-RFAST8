@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const InfanciaController = require("../controllers/curso-vida.controller");
+const DashboardServiciosController = require("../controllers/dashboard-servicios.controller")
 const usuariosController = require("../controllers/usuario.controller");
 const { validarUsuario } = require("../auxiliar/usuario.validador");
 const   loginController  = require("../controllers/autenticacion.controller");
@@ -13,6 +14,7 @@ const router = Router();
 //Rutas para Cursos de Vida
 router.get("/curso-vida/:CODIGO/:edadInicial/:edadFinal", InfanciaController.cursoVida);
 router.post("/curso-vida/buscar/:CODIGO/:edadInicial/:edadFinal", InfanciaController.buscar);
+router.get("/dashboard-servicios", DashboardServiciosController.servicios);
 
 //Rutas para perfiles
 router.get("/perfiles", validarJWT, usuariosController.listaPerfiles);

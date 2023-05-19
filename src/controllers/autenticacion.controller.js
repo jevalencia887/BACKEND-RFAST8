@@ -35,7 +35,8 @@ exports.login = async ( req, res ) => {
         const token = await generarJWT( usuarioLogeado );
 
         res.status( 200).json({
-            token
+            token,
+            message: 'Operacion exitosa'
         });
         
     } catch ( error ) {

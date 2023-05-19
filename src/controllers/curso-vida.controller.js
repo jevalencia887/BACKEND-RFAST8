@@ -120,7 +120,7 @@ exports.cursoVida = async (req, res) => {
             itemperpage: limit,
             islast: Math.round(count[0].data / limit) == page,
             atendidos: atendidos,
-            noAtendidos,
+            noAtendidos: noAtendidos,
             total: count[0].data,
             data: resul
         })
