@@ -19,9 +19,11 @@ exports.sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, 
     },
 });
 
-exports.sequelize1 = new Sequelize(process.env.DB_NAME_SQL, process.env.DB_USERNAME_SQL, process.env.DB_PASSWORD_SQL, {
-    dialect: 'mysql',
-    host: process.env.DB_SERVER_SQL,
+/* exports.sequelize1 = new Sequelize(process.env.DB_NAME_SQL, process.env.DB_USERNAME_SQL, process.env.DB_PASSWORD_SQL, { */
+exports.sequelize1 = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
+    dialect: 'mssql',
+    /* host: process.env.DB_SERVER_SQL, */
+    host: process.env.DB_SERVER,
     logging: false,
     dialectOptions: {
         requestTimeout: 90000000,

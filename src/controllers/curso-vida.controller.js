@@ -10,7 +10,7 @@ exports.cursoVida = async (req, res) => {
         const page = req.query.page || 1;
         const limit = req.query.limit || 10;
         const offset = (page - 1) * limit;
-        const query = `SELECT 
+        const query = `SELECT DISTINCT a.NUMDOCUM,
         f.IPS, g.NOMBRE AS NOMBRE_IPS, 
         a.TIPDOCUM AS TIPO_DOCUMENTO, 
         a.NUMDOCUM AS NUMERO_DOCUMENTO, 
@@ -19,7 +19,7 @@ exports.cursoVida = async (req, res) => {
         a.APELLIDO2, 
         a.NOMBRE1,
         a.NOMBRE2,
-        a.FECHANAC AS FECHA_NACIMIENTO, 
+        CONVERT(date, a.FECHANAC, 120) AS FECHA_NACIMIENTO, 
         a.SEXO,
         e.EMBARAZO,
         a.TIPDISCAP AS TIPO_DISCAPACIDAD,
@@ -59,7 +59,7 @@ exports.cursoVida = async (req, res) => {
         const resul = await sequelize.query(query, {type: QueryTypes.SELECT});
         
         const queryCount = `SELECT 
-        COUNT(*) data
+        COUNT(DISTINCT a.NUMDOCUM) data
         FROM fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
         JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
@@ -77,7 +77,7 @@ exports.cursoVida = async (req, res) => {
         
 
         const queryAtendidos = `SELECT
-        COUNT(*) atendidos
+        COUNT(DISTINCT a.NUMDOCUM) atendidos
         FROM fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
         JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
@@ -95,7 +95,7 @@ exports.cursoVida = async (req, res) => {
         
 
         const querySinAtencion = `SELECT
-        COUNT(*) noAtendidos
+        COUNT(DISTINCT a.NUMDOCUM) noAtendidos
         FROM fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
         JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
@@ -154,7 +154,7 @@ exports.buscar = async (req, res) => {
             
         }
         
-        const query = `SELECT 
+        const query = `SELECT DISTINCT a.NUMDOCUM,
         f.IPS, g.NOMBRE AS NOMBRE_IPS, 
         a.TIPDOCUM AS TIPO_DOCUMENTO, 
         a.NUMDOCUM AS NUMERO_DOCUMENTO, 
@@ -163,7 +163,7 @@ exports.buscar = async (req, res) => {
         a.APELLIDO2, 
         a.NOMBRE1,
         a.NOMBRE2,
-        a.FECHANAC AS FECHA_NACIMIENTO, 
+        CONVERT(date, a.FECHANAC, 120) AS FECHA_NACIMIENTO, 
         a.SEXO,
         e.EMBARAZO,
         a.TIPDISCAP AS TIPO_DISCAPACIDAD,
@@ -204,7 +204,7 @@ exports.buscar = async (req, res) => {
         const resul = await sequelize.query(query, {type: QueryTypes.SELECT});
         
         const queryCount = `SELECT 
-        COUNT(*) data
+        COUNT(DISTINCT a.NUMDOCUM) data
         FROM fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
         JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
@@ -222,7 +222,7 @@ exports.buscar = async (req, res) => {
         
 
         const queryAtendidos = `SELECT
-        COUNT(*) atendidos
+        COUNT(DISTINCT a.NUMDOCUM) atendidos
         FROM fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
         JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
@@ -240,7 +240,7 @@ exports.buscar = async (req, res) => {
         //console.log(atendidos);
 
         const querySinAtencion = `SELECT
-        COUNT(*) noAtendidos
+        COUNT(DISTINCT a.NUMDOCUM) noAtendidos
         FROM fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
         JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
@@ -266,7 +266,7 @@ exports.buscar = async (req, res) => {
             itemperpage: limit,
             islast: Math.round(count[0].data / limit) == page,
             atendidos: atendidos,
-            noAtendidos,
+            noAtendidos: noAtendidos,
             total: count[0].data,
             data: resul
         })
