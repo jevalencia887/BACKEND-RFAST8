@@ -15,7 +15,8 @@ class Server {
 
     async iniciarDB() {
         try {
-          sequelize1.authenticate(/* { alter: true } */).then( () => {
+          sequelize1.authenticate(/* { alter: true }  */).then( () => {
+          /* sequelize1.sync({ alter: true }).then( () => { */
             console.log( 'Conexion exitosa');
           })
           
