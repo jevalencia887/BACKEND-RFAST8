@@ -24,6 +24,7 @@ router.post("/perfiles", validarJWT, usuariosController.crearPerfil);
 router.get("/usuario", validarJWT,  usuariosController.listarUsuarios);
 router.post("/usuario", [validarUsuario, validarJWT],  usuariosController.crearUsuario);
 router.post("/login", loginController.login);
+router.get("/validar-token", validarJWT, loginController.validarToken);
 
 
 module.exports = router;

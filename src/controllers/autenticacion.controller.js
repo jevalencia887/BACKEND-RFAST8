@@ -2,6 +2,7 @@ const { generarJWT } = require("../auxiliar/jwt");
 const USUARIO = require("../modelos/usuario.model");
 const PERFIL= require("../modelos/perfil.model");
 const bcrypt = require('bcryptjs');
+const { token } = require("morgan");
 
 
 exports.login = async ( req, res ) => {
@@ -32,7 +33,7 @@ exports.login = async ( req, res ) => {
             perfil: Usuario[0].perfil.dataValues.nombre
         }
         
-        const token = await generarJWT( usuarioLogeado );
+        const token = await generarJWT( usuarioLogeado.id );
 
         res.status( 200).json({
             token,
@@ -44,5 +45,16 @@ exports.login = async ( req, res ) => {
         res.status( 500 ).json({
             message: 'Error en el servidor....'
         });
+    }
+}
+exports.validarToken = async(req, res) => {
+    try {
+        let token = await generarJWT(req.id);
+        res.status( 200).json({
+            token,
+            message: 'Operacion exitosa'
+        });
+    } catch (error) {
+        return res.status(500).json({message: 'Error en el servidor...'})
     }
 }
