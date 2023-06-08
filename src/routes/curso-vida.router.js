@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const InfanciaController = require("../controllers/curso-vida.controller");
+const cursoVidaController = require("../controllers/curso-vida.controller");
 const DashboardServiciosController = require("../controllers/dashboard-servicios.controller")
 const usuariosController = require("../controllers/usuario.controller");
 const { validarUsuario } = require("../auxiliar/usuario.validador");
@@ -12,8 +12,8 @@ const router = Router();
 
 
 //Rutas para Cursos de Vida
-router.get("/curso-vida/:CODIGO/:edadInicial/:edadFinal", InfanciaController.cursoVida);
-router.post("/curso-vida/buscar/:CODIGO/:edadInicial/:edadFinal", InfanciaController.buscar);
+router.get("/curso-vida/:CODIGO/:edadInicial/:edadFinal", cursoVidaController.cursoVida);
+router.post("/curso-vida/buscar/:CODIGO/:edadInicial/:edadFinal", cursoVidaController.buscar);
 router.get("/dashboard-servicios", DashboardServiciosController.servicios);
 
 //Rutas para perfiles
@@ -25,6 +25,7 @@ router.get("/usuario", validarJWT,  usuariosController.listarUsuarios);
 router.post("/usuario", [validarUsuario, validarJWT],  usuariosController.crearUsuario);
 router.post("/login", loginController.login);
 router.get("/validar-token", validarJWT, loginController.validarToken);
+router.get("/exportar-excel/:CODIGO/:edadInicial/:edadFinal", cursoVidaController.cursoVidaExcel);
 
 
 module.exports = router;

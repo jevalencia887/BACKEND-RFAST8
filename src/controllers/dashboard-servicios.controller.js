@@ -20,7 +20,6 @@ exports.servicios = async (req, res) => {
         WHERE h.CODIGO = 1607 
         GROUP BY h.NOMBRE, h.CODIGO`
         const resul = await sequelize.query(queryServicios, {type: QueryTypes.SELECT});
-        console.log(resul);
 
         const queryAtendidos = `SELECT
         COUNT(*) atendidos,
@@ -38,7 +37,6 @@ exports.servicios = async (req, res) => {
         WHERE h.CODIGO = 1607 AND f.ATENDIDO = 1
         GROUP BY h.NOMBRE, h.CODIGO`
         const atendidos = await sequelize.query(queryAtendidos, {type: QueryTypes.SELECT});
-        console.log(atendidos);
 
         if (!resul.length) {
             return res.status(404).json({ msg: 'No se encontraron registros'})
