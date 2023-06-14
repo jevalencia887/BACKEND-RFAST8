@@ -37,6 +37,7 @@ exports.login = async ( req, res ) => {
 
         res.status( 200).json({
             token,
+            usuarioLogeado,
             message: 'Operacion exitosa'
         });
         
