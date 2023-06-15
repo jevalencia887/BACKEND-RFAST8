@@ -371,7 +371,7 @@ exports.cursoVidaExcel = async (req, res) => {
         const CODIGO = req.params.CODIGO; 
         const edadInicial = req.params.edadInicial;
         const edadFinal = req.params.edadFinal;
-        const query = `SELECT DISTINCT a.NUMDOCUM,
+        const query = `SELECT DISTINCT TOP(10000) a.NUMDOCUM,
         f.IPS, 
         g.NOMBRE AS NOMBRE_IPS, 
         CASE
@@ -603,13 +603,7 @@ exports.cursoVidaExcel = async (req, res) => {
         catch (error) {
         console.log(error);
         return res.status(500).send('Error en el servidor') 
-    }
-    const fs = require('fs');
-
-    if (fs.existsSync('C:/BACKEND-RFAST8/src/controller/curso-vida.controller.js')) {
-    console.log('El archivo existe');
-    } else {
-    console.log('El archivo no existe');
+        
     }
 
 }
