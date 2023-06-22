@@ -31,10 +31,8 @@ exports.cursoVida = async (req, res) => {
         END AS TIPO_DOCUMENTO, 
         a.NUMDOCUM AS NUMERO_DOCUMENTO, 
         a.POBLACION_ESPECIAL,
-        a.APELLIDO1, 
-        a.APELLIDO2, 
-        a.NOMBRE1,
-        a.NOMBRE2,
+        a.APELLIDO1 + ' ' + a.APELLIDO2 AS APELLIDOS,
+        a.NOMBRE1 + ' ' + a.NOMBRE2 AS NOMBRES,
         CONVERT(date, a.FECHANAC, 120) AS FECHA_NACIMIENTO, 
         CASE
 		WHEN a.SEXO = 2 THEN 'FEMENINO'
@@ -81,13 +79,27 @@ exports.cursoVida = async (req, res) => {
         b.NOMBRE AS PAIS, 
         h.NOMBRE, 
         j.NOMBRE AS CUPS, 
-        f.ATENCION_FACTURA, 
+        CONVERT(date, f.ATENCION_FACTURA, 120) AS ATENCION_FACTURA, 
         f.CODIGO, 
-        f.ATENDIDO,
-        floor(
-            (cast(convert(varchar(8),getdate(),112) as int)-
-            cast(convert(varchar(8),a.FECHANAC,112) as int) ) / 10000
-            ) as EDAD 
+        CASE
+        WHEN f.ATENDIDO = 0 THEN 'NO'
+		WHEN f.ATENDIDO = 1 THEN 'SI'
+		END AS ATENDIDO,
+		CONCAT(
+			CAST(
+				FLOOR(
+					(CAST(CONVERT(VARCHAR(8), GETDATE(), 112) AS INT) -
+					CAST(CONVERT(VARCHAR(8), a.FECHANAC, 112) AS INT)) / 10000
+				) AS VARCHAR(10)
+			),
+			' ',
+			CASE e.FORMEDAD
+				WHEN 1 THEN 'AÑOS'
+				WHEN 2 THEN 'MESES'
+				WHEN 3 THEN 'DIAS'
+				WHEN 4 THEN 'HORAS'
+			END
+		) AS EDAD
         FROM fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
         JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
@@ -268,9 +280,12 @@ exports.buscar = async (req, res) => {
         b.NOMBRE AS PAIS, 
         h.NOMBRE, 
         j.NOMBRE AS CUPS, 
-        f.ATENCION_FACTURA, 
+        CONVERT(date, f.ATENCION_FACTURA, 120) AS ATENCION_FACTURA, 
         f.CODIGO, 
-        f.ATENDIDO,
+        CASE
+        WHEN f.ATENDIDO = 0 THEN 'NO'
+		WHEN f.ATENDIDO = 1 THEN 'SI'
+		END AS ATENDIDO,
         floor(
             (cast(convert(varchar(8),getdate(),112) as int)-
             cast(convert(varchar(8),a.FECHANAC,112) as int) ) / 10000
@@ -373,85 +388,7 @@ exports.cursoVidaExcel = async (req, res) => {
         const edadFinal = req.params.edadFinal;
         const query = 
         ` 
-        CREATE TABLE #tmpResults (
-        Codigo VARCHAR(100),
-        Descripcion VARCHAR(255)
-        )
-        
-        INSERT INTO #tmpResults (Codigo, Descripcion)
-        SELECT
-        j.CODIGO,
-        MAX(CASE 
-        WHEN j.CODIGO = '890105' THEN 'ATENCIÓN (VISITA) DOMICILIARIA, POR ENFERMERÍA'
-        WHEN j.CODIGO = '890114' THEN 'ATENCIÓN (VISITA) DOMICILIARIA, POR PROMOTOR DE LA SALUD'
-        WHEN j.CODIGO = '890115' THEN 'ATENCIÓN (VISITA) DOMICILIARIA, POR EQUIPO INTERDISCIPLINARIO'
-        WHEN j.CODIGO = '890116' THEN 'ATENCION (VISITA) DOMICILIARIA POR OTRO PROFESIONAL DE LA SALUD'
-        WHEN j.CODIGO = '890201' THEN 'ATENCIÓN (VISITA) DOMICILIARIA, POR EQUIPO INTERDISCIPLINARIO' 
-        WHEN j.CODIGO = '890203' THEN 'CONSULTA DE PRIMERA VEZ POR ODONTOLOGIA GENERAL'
-        WHEN j.CODIGO = '890205' THEN 'CONSULTA DE PRIMERA VEZ POR ENFERMERIA' 
-        WHEN j.CODIGO = '890206' THEN 'CONSULTA DE PRIMERA VEZ POR NUTRICION Y DIETETICA' 
-        WHEN j.CODIGO = '890263' THEN 'CONSULTA DE PRIMERA VEZ POR ESPECIALISTA EN MEDICINA FAMILIAR' 
-        WHEN j.CODIGO = '890283' THEN 'CONSULTA DE PRIMERA VEZ POR ESPECIALISTA EN PEDIATRÍA'
-        WHEN j.CODIGO = '890301' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR MEDICINA GENERAL'
-        WHEN j.CODIGO = '890303' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR ODONTOLOGIA GENERAL'
-        WHEN j.CODIGO = '890305' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR ENFERMERIA'
-        WHEN j.CODIGO = '890306' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR NUTRICION Y DIETETICA'
-        WHEN j.CODIGO = '890363' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR ESPECIALISTA EN MEDICINA FAMILIAR'
-        WHEN j.CODIGO = '890383' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR ESPECIALISTA EN PEDIATRÍA'
-        WHEN j.CODIGO = '902213' THEN 'HEMOGLOBINA' 
-        WHEN j.CODIGO = '950601' THEN 'MEDICION DE AGUDEZA VISUAL'
-        WHEN j.CODIGO = '990101' THEN 'EDUCACION GRUPAL EN SALUD, POR MEDICINA GENERAL'
-        WHEN j.CODIGO = '990102' THEN 'EDUCACION GRUPAL EN SALUD, POR MEDICINA ESPECIALIZADA'
-        WHEN j.CODIGO = '990103' THEN 'EDUCACION GRUPAL EN SALUD, POR ODONTOLOGIA'
-        WHEN j.CODIGO = '990104' THEN 'EDUCACION GRUPAL EN SALUD, POR ENFERMERIA'
-        WHEN j.CODIGO = '990105' THEN 'EDUCACIÓN GRUPAL EN SALUD, POR NUTRICION Y DIETETICA'
-        WHEN j.CODIGO = '990106' THEN 'EDUCACION GRUPAL EN SALUD, POR PSICOLOGIA'
-        WHEN j.CODIGO = '990107' THEN 'EDUCACION GRUPAL EN SALUD, POR TRABAJO SOCIAL'
-        WHEN j.CODIGO = '990108' THEN 'EDUCACIÓN GRUPAL EN SALUD, POR FISIOTERAPIA'
-        WHEN j.CODIGO = '990109' THEN 'EDUCACIÓN GRUPAL EN SALUD, POR TERAPIA OCUPACIONAL'
-        WHEN j.CODIGO = '990110' THEN 'EDUCACION GRUPAL EN SALUD, POR FONIATRIA Y FONOAUDIOLOGIA'
-        WHEN j.CODIGO = '990111' THEN 'EDUCACION GRUPAL EN SALUD, POR AGENTE EDUCATIVO'
-        WHEN j.CODIGO = '990112' THEN 'EDUCACION GRUPAL EN SALUD, POR HIGIENE ORAL'
-        WHEN j.CODIGO = '990201' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR MEDICINA GENERAL'
-        WHEN j.CODIGO = '990203' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR ODONTOLOGIA'
-        WHEN j.CODIGO = '990204' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR ENFERMERIA'
-        WHEN j.CODIGO = '990206' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR PSICOLOGIA'
-        WHEN j.CODIGO = '990207' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR TRABAJO SOCIAL'
-        WHEN j.CODIGO = '990208' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR FISIOTERAPIA'
-        WHEN j.CODIGO = '990209' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR TERAPIA OCUPACIONAL' 
-        WHEN j.CODIGO = '990212' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR HIGIENE ORAL'
-        WHEN j.CODIGO = '990213' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR EQUIPO INTERDISCIPLINARIO'
-        WHEN j.CODIGO = '990221' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR EQUIPO INTERDISCIPLINARIO Y COMUNICACIÓN EN POBLACIÓN INFANTIL Y ADOLESCENTE'
-        WHEN j.CODIGO = '990222' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR EQUIPO INTERDISCIPLINARIO Y COMUNICACIÓN EN POBLACIÓN DE HOMBRES Y MUJERES EN EDAD FÉRTIL'
-        WHEN j.CODIGO = '990223' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR EQUIPO INTERDISCIPLINARIO Y COMUNICACIÓN EN POBLACIÓN DE MUJERES GESTANTES Y LACTANTES' 
-        WHEN j.CODIGO = '990224' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR EQUIPO INTERDISCIPLINARIO Y COMUNICACIÓN EN POBLACIÓN DE ADULTO MAYOR'
-        WHEN j.CODIGO = '993102' THEN 'VACUNACION CONTRA TUBERCULOSIS [BCG]'
-        WHEN j.CODIGO = '993106' THEN 'VACUNACIÓN CONTRA NEUMOCOCO' 
-        WHEN j.CODIGO = '993122' THEN 'VACUNACIÓN COMBINADA CONTRA DIFTERIA, TÉTANOS Y TOS FERINA [DPT]'
-        WHEN j.CODIGO = '993130' THEN 'VACUNACIÓN COMBINADA CONTRA HAEMOPHILUS INFLUENZA TIPO B, DIFTERIA, TÉTANOS, TOS FERINA Y HEPATITIS B (PENTAVALENTE)' 
-        WHEN j.CODIGO = '993501' THEN 'VACUNACION CONTRA POLIOMIELITIS (VOP O IVP)'
-        WHEN j.CODIGO = '99350101' THEN 'VACUNACIÓN CONTRA POLIOMIELITIS (VOP O IVP) INTRAMUSCULAR'
-        WHEN j.CODIGO = '993502' THEN 'VACUNACION CONTRA HEPATITIS A'
-        WHEN j.CODIGO = '993503' THEN 'VACUNACION CONTRA Hepatitis B'
-        WHEN j.CODIGO = '993504' THEN 'VACUNACION CONTRA FIEBRE AMARILLA'
-        WHEN j.CODIGO = '993509' THEN 'VACUNACION CONTRA VARICELA'
-        WHEN j.CODIGO = '99351003' THEN 'VACUNA CONTRA INFLUENZA PEDIATRICA  (H1N1)'
-        WHEN j.CODIGO = '993512' THEN 'VACUNACION CONTRA ROTAVIRUS'
-        WHEN j.CODIGO = '993522' THEN 'VACUNACIÓN COMBINADA CONTRA SARAMPIÓN, PAROTIDITIS Y RUBÉOLA [SRP] (TRIPLE VIRAL)'
-        WHEN j.CODIGO = '997102' THEN 'APLICACION DE SELLANTES DE FOTOCURADO' 
-        WHEN j.CODIGO = '997106' THEN 'TOPICACIÓN DE FLUOR EN BARNIZ'
-        WHEN j.CODIGO = '997310' THEN 'CONTROL DE PLACA DENTAL -'
-        WHEN j.CODIGO = 'P0000002' THEN 'CONSEJERIA EN VIH'
-        WHEN j.CODIGO = 'P0000004' THEN 'DEMANDA INDUCIDA CANALIZADOS ALTERACIONES DE LA AGUDEZA VISUAL'
-        WHEN j.CODIGO = 'P0000006' THEN 'DEMANDA INDUCIDA CANALIZADOS ATENCION DEL PARTO' 
-        WHEN j.CODIGO = 'P0000009' THEN 'DEMANDA INDUCIDA CANALIZADOS CRECIMIENTO Y DESARROLLO'
-        WHEN j.CODIGO = 'P0000013' THEN 'DEMANDA INDUCIDA CANALIZADOS VACUNACION PAI' 
-        WHEN j.CODIGO = 'P0000014' THEN 'DEMANDA INDUCIDA CANALIZADOS VALORACION DEL JOVEN'          
-        END) AS Descripcion
-        FROM fac_p_cups j
-        GROUP BY j.CODIGO
-
-        SELECT DISTINCT TOP(10000) a.NUMDOCUM,
+        SELECT DISTINCT TOP(3650) a.NUMDOCUM,
         f.IPS, 
         g.NOMBRE AS NOMBRE_IPS, 
         CASE
@@ -469,8 +406,7 @@ exports.cursoVidaExcel = async (req, res) => {
         WHEN a.TIPDOCUM = 14 THEN 'RECIDENTE ESPECIAL'
         WHEN a.TIPDOCUM = 15 THEN 'PERMISO PROTECCION TEMPORAL'
         ELSE 'OTRO'
-        END AS TIPO_DOCUMENTO, 
-        a.NUMDOCUM AS NUMERO_DOCUMENTO, 
+        END AS TIPO_DOCUMENTO,				 
         a.POBLACION_ESPECIAL,
         a.APELLIDO1, 
         a.APELLIDO2, 
@@ -481,7 +417,7 @@ exports.cursoVidaExcel = async (req, res) => {
         WHEN a.SEXO = 2 THEN 'FEMENINO'
         WHEN a.SEXO = 1 THEN 'MASCULINO' 
         ELSE 'OTRO'
-        END AS SEXO,
+        END AS GENERO,
         CASE
         WHEN e.EMBARAZO = 0 THEN 'NO'
         WHEN e.EMBARAZO = 1 THEN 'EMBARAZADA' 
@@ -501,7 +437,7 @@ exports.cursoVidaExcel = async (req, res) => {
         WHEN a.GRDDISCAP = 1 THEN 'LEVE'
         WHEN a.GRDDISCAP = 2 THEN 'MODERADO' 
         WHEN a.GRDDISCAP = 3 THEN 'SEVERA'
-        END AS GRADO_DISCAPACIDAD, 
+        END AS GRADO_DISCAPACIDAD,
         a.DIRECRES AS DIRECCION_RECIDENCIA, 
         a.TELEFRES AS TELEFONO_RECIDENCIA,
         a.CODBARES AS CODIGO_BARRIO,
@@ -518,84 +454,97 @@ exports.cursoVidaExcel = async (req, res) => {
         WHEN a.ETNICO = 8 THEN 'RAIZAL(SAN ANDRES)'
         WHEN a.ETNICO = 9 THEN 'PALENQUERO'
         ELSE 'OTRO'
-        END AS ETNICO, 
+        END AS ETNICO,
         b.NOMBRE AS PAIS, 
         h.NOMBRE, 
-        MAX(CASE WHEN k.Codigo = '890105' THEN Descripcion END) AS '890105',
-        MAX(CASE WHEN k.Codigo = '890114' THEN Descripcion END) AS '890114',
-        MAX(CASE WHEN k.Codigo = '890115' THEN Descripcion END) AS '890115',
-	    MAX(CASE WHEN k.Codigo = '890116' THEN Descripcion END) AS '890116',
-		MAX(CASE WHEN k.Codigo = '890201' THEN Descripcion END) AS '890201',
-		MAX(CASE WHEN k.Codigo = '890203' THEN Descripcion END) AS '890203',
-		MAX(CASE WHEN k.Codigo = '890205' THEN Descripcion END) AS '890205',
-		MAX(CASE WHEN k.Codigo = '890206' THEN Descripcion END) AS '890206',
-		MAX(CASE WHEN k.Codigo = '890263' THEN Descripcion END) AS '890263',
-		MAX(CASE WHEN k.Codigo = '890283' THEN Descripcion END) AS '890283',
-		MAX(CASE WHEN k.Codigo = '890301' THEN Descripcion END) AS '890301',
-		MAX(CASE WHEN k.Codigo = '890303' THEN Descripcion END) AS '890303',
-		MAX(CASE WHEN k.Codigo = '890305' THEN Descripcion END) AS '890305',
-		MAX(CASE WHEN k.Codigo = '890306' THEN Descripcion END) AS '890306',
-		MAX(CASE WHEN k.Codigo = '890363' THEN Descripcion END) AS '890363',
-		MAX(CASE WHEN k.Codigo = '890383' THEN Descripcion END) AS '890383',
-		MAX(CASE WHEN k.Codigo = '902213' THEN Descripcion END) AS '902213',
-		MAX(CASE WHEN k.Codigo = '950601' THEN Descripcion END) AS '950601',
-		MAX(CASE WHEN k.Codigo = '990101' THEN Descripcion END) AS '990101',
-		MAX(CASE WHEN k.Codigo = '990102' THEN Descripcion END) AS '990102',
-		MAX(CASE WHEN k.Codigo = '990103' THEN Descripcion END) AS '990103',
-		MAX(CASE WHEN k.Codigo = '990104' THEN Descripcion END) AS '990104',
-		MAX(CASE WHEN k.Codigo = '990105' THEN Descripcion END) AS '990105',
-		MAX(CASE WHEN k.Codigo = '990106' THEN Descripcion END) AS '990106',
-		MAX(CASE WHEN k.Codigo = '990107' THEN Descripcion END) AS '990107',
-		MAX(CASE WHEN k.Codigo = '990108' THEN Descripcion END) AS '990108',
-		MAX(CASE WHEN k.Codigo = '990109' THEN Descripcion END) AS '990109',
-		MAX(CASE WHEN k.Codigo = '990110' THEN Descripcion END) AS '990110',
-		MAX(CASE WHEN k.Codigo = '990111' THEN Descripcion END) AS '990111',
-		MAX(CASE WHEN k.Codigo = '990112' THEN Descripcion END) AS '990112',
-		MAX(CASE WHEN k.Codigo = '990201' THEN Descripcion END) AS '990201',
-		MAX(CASE WHEN k.Codigo = '990203' THEN Descripcion END) AS '990203',
-		MAX(CASE WHEN k.Codigo = '990204' THEN Descripcion END) AS '990204',
-		MAX(CASE WHEN k.Codigo = '990206' THEN Descripcion END) AS '990206',
-		MAX(CASE WHEN k.Codigo = '990207' THEN Descripcion END) AS '990207',
-		MAX(CASE WHEN k.Codigo = '990208' THEN Descripcion END) AS '990208',
-		MAX(CASE WHEN k.Codigo = '990209' THEN Descripcion END) AS '990209',
-		MAX(CASE WHEN k.Codigo = '990212' THEN Descripcion END) AS '990212',
-		MAX(CASE WHEN k.Codigo = '990213' THEN Descripcion END) AS '990213',
-		MAX(CASE WHEN k.Codigo = '990221' THEN Descripcion END) AS '990221',
-		MAX(CASE WHEN k.Codigo = '990222' THEN Descripcion END) AS '990222',
-		MAX(CASE WHEN k.Codigo = '990223' THEN Descripcion END) AS '990223',
-		MAX(CASE WHEN k.Codigo = '990224' THEN Descripcion END) AS '990224',
-		MAX(CASE WHEN k.Codigo = '993102' THEN Descripcion END) AS '993102',
-		MAX(CASE WHEN k.Codigo = '993106' THEN Descripcion END) AS '993106',
-		MAX(CASE WHEN k.Codigo = '993122' THEN Descripcion END) AS '993122',
-		MAX(CASE WHEN k.Codigo = '993130' THEN Descripcion END) AS '993130',
-		MAX(CASE WHEN k.Codigo = '993501' THEN Descripcion END) AS '993501',
-		MAX(CASE WHEN k.Codigo = '99350101' THEN Descripcion END) AS '99350101',
-		MAX(CASE WHEN k.Codigo = '993502' THEN Descripcion END) AS '993502',
-		MAX(CASE WHEN k.Codigo = '993503' THEN Descripcion END) AS '993503',
-		MAX(CASE WHEN k.Codigo = '993504' THEN Descripcion END) AS '993504',
-		MAX(CASE WHEN k.Codigo = '993509' THEN Descripcion END) AS '993509',
-		MAX(CASE WHEN k.Codigo = '99351003' THEN Descripcion END) AS '99351003',
-		MAX(CASE WHEN k.Codigo = '993512' THEN Descripcion END) AS '993512',
-		MAX(CASE WHEN k.Codigo = '993522' THEN Descripcion END) AS '993522',
-		MAX(CASE WHEN k.Codigo = '997102' THEN Descripcion END) AS '997102',
-		MAX(CASE WHEN k.Codigo = '997106' THEN Descripcion END) AS '997106',
-		MAX(CASE WHEN k.Codigo = '997310' THEN Descripcion END) AS '997310',
-		MAX(CASE WHEN k.Codigo = 'P0000002' THEN Descripcion END) AS 'P0000002',
-		MAX(CASE WHEN k.Codigo = 'P0000004' THEN Descripcion END) AS 'P0000004',
-		MAX(CASE WHEN k.Codigo = 'P0000006' THEN Descripcion END) AS 'P0000006',
-		MAX(CASE WHEN k.Codigo = 'P0000009' THEN Descripcion END) AS 'P0000009',
-		MAX(CASE WHEN k.Codigo = 'P0000013' THEN Descripcion END) AS 'P0000013',
-		MAX(CASE WHEN k.Codigo = 'P0000014' THEN Descripcion END) AS 'P0000014', 
-        f.ATENCION_FACTURA, 
         f.CODIGO, 
-        f.ATENDIDO,
+        CASE
+        WHEN f.ATENDIDO = 0 THEN 'NO'
+        WHEN f.ATENDIDO = 1 THEN 'SI'
+        END AS ATENDIDO,
+        f.ATENCION_FACTURA,
         DATEPART(DAY, a.FECHANAC) AS DIA,
         DATEPART(MONTH, a.FECHANAC) AS MES,
         DATEPART(YEAR, a.FECHANAC) AS AÑO,
-        floor(
-            (cast(convert(varchar(8),getdate(),112) as int)-
-            cast(convert(varchar(8),a.FECHANAC,112) as int) ) / 10000
-            ) as EDAD
+        CONCAT(
+        CAST(
+            FLOOR(
+            (CAST(CONVERT(VARCHAR(8), GETDATE(), 112) AS INT) -
+            CAST(CONVERT(VARCHAR(8), a.FECHANAC, 112) AS INT)) / 10000
+            ) AS VARCHAR(10)
+            ),
+            ' ',
+            CASE e.FORMEDAD
+            WHEN 1 THEN 'AÑOS'
+            WHEN 2 THEN 'MESES'
+            WHEN 3 THEN 'DIAS'
+            WHEN 4 THEN 'HORAS'
+            END) AS EDAD,
+        MAX(CASE WHEN j.CODIGO = '890105' THEN 'ATENCIÓN (VISITA) DOMICILIARIA, POR ENFERMERÍA' END) AS '890105',
+        MAX(CASE WHEN j.CODIGO = '890114' THEN 'ATENCIÓN (VISITA) DOMICILIARIA, POR PROMOTOR DE LA SALUD' END) AS '890114',
+        MAX(CASE WHEN j.CODIGO = '890115' THEN 'ATENCIÓN (VISITA) DOMICILIARIA, POR EQUIPO INTERDISCIPLINARIO' END) AS '890115',
+        MAX(CASE WHEN j.CODIGO = '890116' THEN 'ATENCION (VISITA) DOMICILIARIA POR OTRO PROFESIONAL DE LA SALUD' END) AS '890116',
+        MAX(CASE WHEN j.CODIGO = '890201' THEN 'ATENCIÓN (VISITA) DOMICILIARIA, POR EQUIPO INTERDISCIPLINARIO' END) AS '890201',
+        MAX(CASE WHEN j.CODIGO = '890203' THEN 'CONSULTA DE PRIMERA VEZ POR ODONTOLOGIA GENERAL' END) AS '890203',
+        MAX(CASE WHEN j.CODIGO = '890205' THEN 'CONSULTA DE PRIMERA VEZ POR ENFERMERIA' END) AS '890205',
+        MAX(CASE WHEN j.CODIGO = '890206' THEN 'CONSULTA DE PRIMERA VEZ POR NUTRICION Y DIETETICA' END) AS '890206',
+        MAX(CASE WHEN j.CODIGO = '890263' THEN 'CONSULTA DE PRIMERA VEZ POR ESPECIALISTA EN MEDICINA FAMILIAR' END) AS '890263',
+        MAX(CASE WHEN j.CODIGO = '890283' THEN 'CONSULTA DE PRIMERA VEZ POR ESPECIALISTA EN PEDIATRÍA' END) AS '890283',
+        MAX(CASE WHEN j.CODIGO = '890301' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR MEDICINA GENERAL' END) AS '890301',
+        MAX(CASE WHEN j.CODIGO = '890303' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR ODONTOLOGIA GENERAL' END) AS '890303',
+        MAX(CASE WHEN j.CODIGO = '890305' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR ENFERMERIA' END) AS '890305',
+        MAX(CASE WHEN j.CODIGO = '890306' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR NUTRICION Y DIETETICA' END) AS '890306',
+        MAX(CASE WHEN j.CODIGO = '890363' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR ESPECIALISTA EN MEDICINA FAMILIAR' END) AS '890363',
+        MAX(CASE WHEN j.CODIGO = '890383' THEN 'CONSULTA DE CONTROL O DE SEGUIMIENTO POR ESPECIALISTA EN PEDIATRÍA' END) AS '890383',
+        MAX(CASE WHEN j.CODIGO = '902213' THEN 'HEMOGLOBINA' END) AS '902213',
+        MAX(CASE WHEN j.CODIGO = '950601' THEN 'MEDICION DE AGUDEZA VISUAL' END) AS '950601',
+        MAX(CASE WHEN j.CODIGO = '990101' THEN 'EDUCACION GRUPAL EN SALUD, POR MEDICINA GENERAL' END) AS '990101',
+        MAX(CASE WHEN j.CODIGO = '990102' THEN 'EDUCACION GRUPAL EN SALUD, POR MEDICINA ESPECIALIZADA' END) AS '990102',
+        MAX(CASE WHEN j.CODIGO = '990103' THEN 'EDUCACION GRUPAL EN SALUD, POR ODONTOLOGIA' END) AS '990103',
+        MAX(CASE WHEN j.CODIGO = '990104' THEN 'EDUCACION GRUPAL EN SALUD, POR ENFERMERIA' END) AS '990104',
+        MAX(CASE WHEN j.CODIGO = '990105' THEN 'EDUCACIÓN GRUPAL EN SALUD, POR NUTRICION Y DIETETICA' END) AS '990105',
+        MAX(CASE WHEN j.CODIGO = '990106' THEN 'EDUCACION GRUPAL EN SALUD, POR PSICOLOGIA' END) AS '990106',
+        MAX(CASE WHEN j.CODIGO = '990107' THEN 'EDUCACION GRUPAL EN SALUD, POR TRABAJO SOCIAL' END) AS '990107',
+        MAX(CASE WHEN j.CODIGO = '990108' THEN 'EDUCACIÓN GRUPAL EN SALUD, POR FISIOTERAPIA' END) AS '990108',
+        MAX(CASE WHEN j.CODIGO = '990109' THEN 'EDUCACIÓN GRUPAL EN SALUD, POR TERAPIA OCUPACIONAL' END) AS '990109',
+        MAX(CASE WHEN j.CODIGO = '990110' THEN 'EDUCACION GRUPAL EN SALUD, POR FONIATRIA Y FONOAUDIOLOGIA' END) AS '990110',
+        MAX(CASE WHEN j.CODIGO = '990111' THEN 'EDUCACION GRUPAL EN SALUD, POR AGENTE EDUCATIVO' END) AS '990111',
+        MAX(CASE WHEN j.CODIGO = '990112' THEN 'EDUCACION GRUPAL EN SALUD, POR HIGIENE ORAL' END) AS '990112',
+        MAX(CASE WHEN j.CODIGO = '990201' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR MEDICINA GENERAL' END) AS '990201',
+        MAX(CASE WHEN j.CODIGO = '990203' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR ODONTOLOGIA' END) AS '990203',
+        MAX(CASE WHEN j.CODIGO = '990204' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR ENFERMERIA' END) AS '990204',
+        MAX(CASE WHEN j.CODIGO = '990206' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR PSICOLOGIA' END) AS '990206',
+        MAX(CASE WHEN j.CODIGO = '990207' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR TRABAJO SOCIAL' END) AS '990207',
+        MAX(CASE WHEN j.CODIGO = '990208' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR FISIOTERAPIA' END) AS '990208',
+        MAX(CASE WHEN j.CODIGO = '990209' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR TERAPIA OCUPACIONAL' END) AS '990209',
+        MAX(CASE WHEN j.CODIGO = '990212' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR HIGIENE ORAL' END) AS '990212',
+        MAX(CASE WHEN j.CODIGO = '990213' THEN 'EDUCACION INDIVIDUAL EN SALUD, POR EQUIPO INTERDISCIPLINARIO' END) AS '990213',
+        MAX(CASE WHEN j.CODIGO = '990221' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR EQUIPO INTERDISCIPLINARIO Y COMUNICACIÓN EN POBLACIÓN INFANTIL Y ADOLESCENTE' END) AS '990221',
+        MAX(CASE WHEN j.CODIGO = '990222' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR EQUIPO INTERDISCIPLINARIO Y COMUNICACIÓN EN POBLACIÓN DE HOMBRES Y MUJERES EN EDAD FÉRTIL' END) AS '990222',
+        MAX(CASE WHEN j.CODIGO = '990223' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR EQUIPO INTERDISCIPLINARIO Y COMUNICACIÓN EN POBLACIÓN DE MUJERES GESTANTES Y LACTANTES' END) AS '990223',
+        MAX(CASE WHEN j.CODIGO = '990224' THEN 'EDUCACIÓN INDIVIDUAL EN SALUD, POR EQUIPO INTERDISCIPLINARIO Y COMUNICACIÓN EN POBLACIÓN DE ADULTO MAYOR' END) AS '990224',
+        MAX(CASE WHEN j.CODIGO = '993102' THEN 'VACUNACION CONTRA TUBERCULOSIS [BCG]' END) AS '993102',
+        MAX(CASE WHEN j.CODIGO = '993106' THEN 'VACUNACIÓN CONTRA NEUMOCOCO' END) AS '993106',
+        MAX(CASE WHEN j.CODIGO = '993122' THEN 'VACUNACIÓN COMBINADA CONTRA DIFTERIA, TÉTANOS Y TOS FERINA [DPT]' END) AS '993122',
+        MAX(CASE WHEN j.CODIGO = '993130' THEN 'VACUNACIÓN COMBINADA CONTRA HAEMOPHILUS INFLUENZA TIPO B, DIFTERIA, TÉTANOS, TOS FERINA Y HEPATITIS B (PENTAVALENTE)' END) AS '993130',
+        MAX(CASE WHEN j.CODIGO = '993501' THEN 'VACUNACION CONTRA POLIOMIELITIS (VOP O IVP)' END) AS '993501',
+        MAX(CASE WHEN j.CODIGO = '99350101' THEN 'VACUNACIÓN CONTRA POLIOMIELITIS (VOP O IVP) INTRAMUSCULAR' END) AS '99350101',
+        MAX(CASE WHEN j.CODIGO = '993502' THEN 'VACUNACION CONTRA HEPATITIS A' END) AS '993502',
+        MAX(CASE WHEN j.CODIGO = '993503' THEN 'VACUNACION CONTRA Hepatitis B' END) AS '993503',
+        MAX(CASE WHEN j.CODIGO = '993504' THEN 'VACUNACION CONTRA FIEBRE AMARILLA' END) AS '993504',
+        MAX(CASE WHEN j.CODIGO = '993509' THEN 'VACUNACION CONTRA VARICELA' END) AS '993509',
+        MAX(CASE WHEN j.CODIGO = '99351003' THEN 'VACUNA CONTRA INFLUENZA PEDIATRICA  (H1N1)' END) AS '99351003',
+        MAX(CASE WHEN j.CODIGO = '993512' THEN 'VACUNACION CONTRA ROTAVIRUS' END) AS '993512',
+        MAX(CASE WHEN j.CODIGO = '993522' THEN 'VACUNACIÓN COMBINADA CONTRA SARAMPIÓN, PAROTIDITIS Y RUBÉOLA [SRP] (TRIPLE VIRAL)' END) AS '993522',
+        MAX(CASE WHEN j.CODIGO = '997102' THEN 'APLICACION DE SELLANTES DE FOTOCURADO' END) AS '997102',
+        MAX(CASE WHEN j.CODIGO = '997106' THEN 'TOPICACIÓN DE FLUOR EN BARNIZ' END) AS '997106',
+        MAX(CASE WHEN j.CODIGO = '997310' THEN 'CONTROL DE PLACA DENTAL -' END) AS '997310',
+        MAX(CASE WHEN j.CODIGO = 'P0000002' THEN 'CONSEJERIA EN VIH' END) AS 'P0000002',
+        MAX(CASE WHEN j.CODIGO = 'P0000004' THEN 'DEMANDA INDUCIDA CANALIZADOS ALTERACIONES DE LA AGUDEZA VISUAL' END) AS 'P0000004',
+        MAX(CASE WHEN j.CODIGO = 'P0000006' THEN 'DEMANDA INDUCIDA CANALIZADOS ATENCION DEL PARTO' END) AS 'P0000006',
+        MAX(CASE WHEN j.CODIGO = 'P0000009' THEN 'DEMANDA INDUCIDA CANALIZADOS CRECIMIENTO Y DESARROLLO' END) AS 'P0000009',
+        MAX(CASE WHEN j.CODIGO = 'P0000013' THEN 'DEMANDA INDUCIDA CANALIZADOS VACUNACION PAI' END) AS 'P0000013',
+        MAX(CASE WHEN j.CODIGO = 'P0000014' THEN 'DEMANDA INDUCIDA CANALIZADOS VALORACION DEL JOVEN' END) AS 'P0000014'
         FROM fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
         JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
@@ -605,17 +554,16 @@ exports.cursoVidaExcel = async (req, res) => {
         JOIN fac_p_control g ON g.IPS = f.IPS
         JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
         JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
-        LEFT JOIN #tmpResults k ON j.CODIGO = k.Codigo
         WHERE h.CODIGO = ${CODIGO} AND floor(
             (cast(convert(varchar(8),getdate(),112) as int)-
             cast(convert(varchar(8),a.FECHANAC,112) as int) ) / 10000
             ) BETWEEN ${edadInicial} AND ${edadFinal}  AND f.ATENCION_FACTURA  IS NOT NULL
             GROUP BY j.CODIGO, j.NOMBRE,a.NUMDOCUM,f.IPS,g.NOMBRE,a.TIPDOCUM,a.POBLACION_ESPECIAL,a.APELLIDO1, 
             a.APELLIDO2,a.NOMBRE1,a.NOMBRE2,a.FECHANAC,a.SEXO,e.EMBARAZO,a.TIPDISCAP,a.GRDDISCAP,a.DIRECRES,
-            a.TELEFRES,a.CODBARES,d.NOMBRE,c.NOMBRE,a.ETNICO,b.NOMBRE,h.NOMBRE,j.NOMBRE,f.CODIGO, f.ATENDIDO,f.ATENCION_FACTURA
-            ORDER BY a.NUMDOCUM ASC 
-            DROP TABLE #tmpResults`;
-    const resul = await sequelize.query(query, {type: QueryTypes.SELECT}); 
+            a.TELEFRES,a.CODBARES,d.NOMBRE,c.NOMBRE,a.ETNICO,b.NOMBRE,h.NOMBRE,j.NOMBRE,f.CODIGO, f.ATENDIDO,f.ATENCION_FACTURA,
+            e.FORMEDAD
+            ORDER BY a.NUMDOCUM ASC`;
+        const resul = await sequelize.query(query, {type: QueryTypes.SELECT}); 
       /* console.log(Object.keys(resul[0])); */
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Datos');
@@ -632,49 +580,74 @@ exports.cursoVidaExcel = async (req, res) => {
             pattern: 'solid',
             fgColor: { argb: '87CEEB' }
         };
-
-         // Configurar estilos de las celdas
-        /* const headerStyle = { font: { bold: true }, alignment: { horizontal: 'center' } }; */
-        const cellStyle = { alignment: { horizontal: 'center' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } } };
         
-        worksheet.columns = columnas.map( (item) =>{
-            let column = { header: item, key: item, width: 40 }
-            
-            return column;
+          // Separar las columnas en dos grupos
+        const stringColumns = [];
+        const numericColumns = [];
+        
+        columnas.forEach((column) => {
+        if (isNaN(column)) {
+            stringColumns.push(column);
+            } else {
+            numericColumns.push(column);
+            }
         });
-
-        worksheet.columns.forEach(column => {
-            column.width = column.header.length < 40 ? 40 : column.header.length
+        
+        // Ordenar cada grupo por separado
+        stringColumns.sort();
+        numericColumns.sort();
+        
+        // Combinar los dos grupos en un solo array
+        const orderedColumns = stringColumns.concat(numericColumns);
+        
+        // Configurar las columnas en el archivo de Excel utilizando el nuevo orden
+        worksheet.columns = orderedColumns.map((column) => {
+        return { header: column, key: column, width: 40 };
         });
-
+        
+        // Establecer estilos de las celdas
+        const cellStyle = {
+            alignment: { horizontal: 'center' },
+            border: {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+            }
+        };
+        
         worksheet.eachRow({ includeEmpty: true }, (row) => {
             row.eachCell({ includeEmpty: true }, (cell) => {
             cell.style = cellStyle;
             });
         });
-
-            // Aplicar estilos a los encabezados
-            const headerRow = worksheet.getRow(1);
-            headerRow.eachCell((cell) => {
+        
+        // Agregar los encabezados
+        const headerRow = worksheet.getRow(1);
+        headerRow.eachCell((cell) => {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
             cell.fill = headerFill;
             cell.font = headerFont;
         });
-
-        // Agregar los datos al archivo de Excel
-        resul.forEach(item => {
-            worksheet.addRow(item);
+        
+        // Agregar los datos
+        resul.forEach((item) => {
+            const rowData = [];
+            orderedColumns.forEach((column) => {
+            rowData.push(item[column]);
+            });
+            worksheet.addRow(rowData);
         });
-
         // Establecer las cabeceras de respuesta para descargar el archivo
-            res.setHeader(
-                'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            );
-            res.setHeader(
-                'Content-Disposition',
-                'attachment; filename=datos.xlsx'
-            );
-             // Escribir el archivo de Excel en la respuesta
+        res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader(
+            'Content-Disposition',
+            'attachment; filename=datos.xlsx'
+        );
+        // Escribir el archivo de Excel en la respuesta
             workbook.xlsx.write(res)
             .then(() => {
                 res.end();
@@ -685,6 +658,6 @@ exports.cursoVidaExcel = async (req, res) => {
         console.log(error);
         return res.status(500).send('Error en el servidor') 
         
-    }
+        }
 
 }
