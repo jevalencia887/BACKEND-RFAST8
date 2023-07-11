@@ -30,9 +30,10 @@ exports.login = async ( req, res ) => {
 
         const usuarioLogeado = { 
             id:  Usuario[0].id,
-            perfil: Usuario[0].perfil.dataValues.nombre
+            perfil: Usuario[0].perfil.dataValues.nombre,
+            id_perfil: Usuario[0].perfil.dataValues.id_perfil,
         }
-        
+        console.log(Usuario[0].perfil.dataValues);
         const token = await generarJWT( usuarioLogeado.id );
 
         res.status( 200).json({

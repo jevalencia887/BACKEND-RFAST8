@@ -134,7 +134,7 @@ exports.cursoVida = async (req, res) => {
         OFFSET ${offset} ROWS
         FETCH NEXT ${limit} ROWS ONLY`;
         const resul = await sequelize.query(query, {type: QueryTypes.SELECT});
-        console.log(resul);
+        
         const queryCount = `SELECT DISTINCT
         COUNT(*) data
         FROM fac_m_tarjetero a
@@ -149,6 +149,36 @@ exports.cursoVida = async (req, res) => {
         WHERE h.CODIGO = ${CODIGO} AND e.CANTEDAD BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENCION_FACTURA  IS NOT NULL 
 		AND YEAR(f.ATENCION_FACTURA) BETWEEN (YEAR(GETDATE()) - 5) AND YEAR(GETDATE())`
         const count = await sequelize.query(queryCount, {type: QueryTypes.SELECT});
+        
+        const queryAtendidos = `SELECT DISTINCT
+        COUNT(*) atendidos
+        FROM fac_m_tarjetero a
+        JOIN gen_p_paises b ON b.PAIS = a.PAIS 
+        JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
+        JOIN fac_p_comuna d ON d.CODIGO = c.COMUNA 
+        JOIN fac_m_factura e ON e.HISTORIA = a.HISTORIA
+        JOIN fac_m_citas f ON f.HISTORIA = e.HISTORIA
+        JOIN fac_p_control g ON g.IPS = f.IPS
+        JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
+        JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
+        WHERE h.CODIGO = ${CODIGO} AND e.CANTEDAD BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENCION_FACTURA  IS NOT NULL 
+		AND YEAR(f.ATENCION_FACTURA) BETWEEN (YEAR(GETDATE()) - 5) AND YEAR(GETDATE()) and f.ATENDIDO = 1`
+        const atendidos = await sequelize.query(queryAtendidos, {type: QueryTypes.SELECT});
+        
+        const querySinAtencion = `SELECT DISTINCT
+        COUNT(*) noAtendidos
+        FROM fac_m_tarjetero a
+        JOIN gen_p_paises b ON b.PAIS = a.PAIS 
+        JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
+        JOIN fac_p_comuna d ON d.CODIGO = c.COMUNA 
+        JOIN fac_m_factura e ON e.HISTORIA = a.HISTORIA
+        JOIN fac_m_citas f ON f.HISTORIA = e.HISTORIA
+        JOIN fac_p_control g ON g.IPS = f.IPS
+        JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
+        JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
+        WHERE h.CODIGO = ${CODIGO} AND e.CANTEDAD BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENCION_FACTURA  IS NOT NULL 
+		AND YEAR(f.ATENCION_FACTURA) BETWEEN (YEAR(GETDATE()) - 5) AND YEAR(GETDATE()) and f.ATENDIDO = 0`
+        const noAtendidos = await sequelize.query(querySinAtencion, {type: QueryTypes.SELECT});
         
         if (!resul.length) {
             return res.status(404).json({ msg: 'No se encontraron registros'})
@@ -335,6 +365,40 @@ exports.buscar = async (req, res) => {
             cast(convert(varchar(8),a.FECHANAC,112) as int) ) / 10000
             ) BETWEEN ${edadInicial} AND ${edadFinal} ${it != "" ? 'AND ('+ it.substring(3, it.length)+')' : ''}`
         const count = await sequelize.query(queryCount, {type: QueryTypes.SELECT});
+        
+        const queryAtendidos = `SELECT
+        COUNT(*) atendidos
+        FROM fac_m_tarjetero a
+        JOIN gen_p_paises b ON b.PAIS = a.PAIS 
+        JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
+        JOIN fac_p_comuna d ON d.CODIGO = c.COMUNA 
+        JOIN fac_m_factura e ON e.HISTORIA = a.HISTORIA
+        JOIN fac_m_citas f ON f.HISTORIA = e.HISTORIA
+        JOIN fac_p_control g ON g.IPS = f.IPS
+        JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
+        JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
+        WHERE h.CODIGO = ${CODIGO} AND floor(
+            (cast(convert(varchar(8),getdate(),112) as int)-
+            cast(convert(varchar(8),a.FECHANAC,112) as int) ) / 10000
+            ) BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENDIDO = 1 ${it != "" ? 'AND ('+ it.substring(3, it.length)+')' : ''}`
+        const atendidos = await sequelize.query(queryAtendidos, {type: QueryTypes.SELECT});
+
+        const querySinAtencion = `SELECT
+        COUNT(*) noAtendidos
+        FROM fac_m_tarjetero a
+        JOIN gen_p_paises b ON b.PAIS = a.PAIS 
+        JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES 
+        JOIN fac_p_comuna d ON d.CODIGO = c.COMUNA 
+        JOIN fac_m_factura e ON e.HISTORIA = a.HISTORIA
+        JOIN fac_m_citas f ON f.HISTORIA = e.HISTORIA
+        JOIN fac_p_control g ON g.IPS = f.IPS
+        JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
+        JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
+        WHERE h.CODIGO = ${CODIGO} AND floor(
+            (cast(convert(varchar(8),getdate(),112) as int)-
+            cast(convert(varchar(8),a.FECHANAC,112) as int) ) / 10000
+            ) BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENDIDO = 0 ${it != "" ? 'AND ('+ it.substring(3, it.length)+')' : ''}`
+        const noAtendidos = await sequelize.query(querySinAtencion, {type: QueryTypes.SELECT});
         
         if (!resul.length) {
             return res.status(404).json({ msg: 'No se encontraron registros'})

@@ -17,12 +17,12 @@ router.post("/curso-vida/buscar/:CODIGO/:edadInicial/:edadFinal", cursoVidaContr
 router.get("/dashboard-servicios", DashboardServiciosController.servicios);
 
 //Rutas para perfiles
-router.get("/perfiles", validarJWT, usuariosController.listaPerfiles);
-router.post("/perfiles", validarJWT, usuariosController.crearPerfil);
+router.get("/perfiles", /* validarJWT, */ usuariosController.listaPerfiles);
+router.post("/perfiles", /* validarJWT, */ usuariosController.crearPerfil);
 
 //Rutas de Usuarios
-router.get("/usuario", validarJWT,  usuariosController.listarUsuarios);
-router.post("/usuario", [validarUsuario, validarJWT],  usuariosController.crearUsuario);
+router.get("/usuario", /* validarJWT, */  usuariosController.listarUsuarios);
+router.post("/usuario", [validarUsuario,/*  validarJWT */],  usuariosController.crearUsuario);
 router.post("/login", loginController.login);
 router.get("/validar-token", validarJWT, loginController.validarToken);
 router.get("/exportar-excel/:CODIGO/:edadInicial/:edadFinal", cursoVidaController.cursoVidaExcel);

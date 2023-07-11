@@ -4,8 +4,8 @@ const bcrypt = require('bcryptjs');
 
 
 exports.listaPerfiles = async (req, res) => {
-   
-   try {
+  
+  try {
 
     const listadoPerfiles = await PERFIL.findAll({});
     if (!listadoPerfiles.length) {
@@ -14,18 +14,18 @@ exports.listaPerfiles = async (req, res) => {
         
     }
 
-    res.status(200).json({msg: 'Listado de perfiles', data: listadoPerfiles})
-   } catch (error) {
+  res.status(200).json({msg: 'Listado de perfiles', data: listadoPerfiles})
+  } catch (error) {
     return res.status(500).json({msg: error.message})
-   } 
- 
+  } 
+
 }
 
 exports.crearPerfil = async (req, res) => {
 
     try {
         const  body  =   req.body;
-       
+      
         const validar = await PERFIL.findAll({ where: { nombre: body.nombre }});
   
         if ( validar.length ) {
@@ -42,34 +42,34 @@ exports.crearPerfil = async (req, res) => {
         }) 
   
     } catch (error) {
-       console.log( error );
-       res.status( 500 ).json({
-           error   : error,
-           message : 'Error inesperado... revisar los logs'
-       });
+      console.log( error );
+      res.status( 500 ).json({
+          error   : error,
+          message : 'Error inesperado... revisar los logs'
+      });
     }
- }
+}
 
- exports.listarUsuarios = async (req, res) => {
-   
+exports.listarUsuarios = async (req, res) => {
+  
     try {
-     const listarUsuarios = await USUARIO.findAll({
+    const listarUsuarios = await USUARIO.findAll({
         include: { model: PERFIL }
-     });
-     if (!listarUsuarios.length) {
- 
-         return res.status(404).json({msg: 'No se Encontraron Usuarios Registrados'});
-         
-     }
- 
-     res.status(200).json({msg: 'Listado de usuarios', data: listarUsuarios})
+    });
+    if (!listarUsuarios.length) {
+
+        return res.status(404).json({msg: 'No se Encontraron Usuarios Registrados'});
+        
+    }
+
+    res.status(200).json({msg: 'Listado de usuarios', data: listarUsuarios})
     } catch (error) {
-     return res.status(500).json({msg: error.message})
+    return res.status(500).json({msg: error.message})
     } 
   
- }
+}
 
- exports.crearUsuario = async(req, res) => {
+exports.crearUsuario = async(req, res) => {
     try {
 
         const body = req.body;
@@ -94,10 +94,41 @@ exports.crearPerfil = async (req, res) => {
         }) 
   
     } catch (error) {
-       console.log( error );
-       res.status( 500 ).json({
-           error   : error,
-           message : 'Error inesperado... revisar los logs'
-       });
+      console.log( error );
+      res.status( 500 ).json({
+          error   : error,
+          message : 'Error inesperado... revisar los logs'
+      });
     }
- }
+}
+
+exports.editarUsuario = async (req, res) => {
+  try {
+    const { id } = req.params; // Obtener el ID del usuario a editar
+    const body = req.body; // Obtener los datos actualizados del usuario
+
+    // Buscar el usuario por ID
+    const usuario = await USUARIO.findByPk(id);
+    if (!usuario) {
+      return res.status(404).json({ msg: 'Usuario no encontrado' });
+    }
+
+    // Actualizar los campos del usuario
+    usuario.nombres = body.nombres;
+    usuario.apellidos = body.apellidos;
+    usuario.email = body.email;
+    usuario.id_perfil = body.id_perfil;
+    usuario.cedula = body.cedula;
+
+    // Guardar los cambios en la base de datos
+    await usuario.save();
+
+    res.status(200).json({ msg: 'Usuario actualizado', data: usuario });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error: error,
+      message: 'Error inesperado... revisar los logs',
+    });
+  }
+};
