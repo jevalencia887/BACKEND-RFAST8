@@ -113,17 +113,22 @@ exports.editarUsuario = async (req, res) => {
       return res.status(404).json({ msg: 'Usuario no encontrado' });
     }
 
-    // Actualizar los campos del usuario
-    usuario.nombres = body.nombres;
-    usuario.apellidos = body.apellidos;
-    usuario.email = body.email;
-    usuario.id_perfil = body.id_perfil;
-    usuario.cedula = body.cedula;
+    if (body.password) {
+      const salt = bcrypt.genSaltSync();
+      let password = bcrypt.hashSync(String(body.password), salt);
+      body.password = password;
+    }
+    
+    const actualizarUsuario = await USUARIO.update(
+      body, 
+      {
+        where: {
+          id
+        }
+      }
+    )
 
-    // Guardar los cambios en la base de datos
-    await usuario.save();
-
-    res.status(200).json({ msg: 'Usuario actualizado', data: usuario });
+    res.status(200).json({ msg: 'Usuario actualizado', data: actualizarUsuario });
   } catch (error) {
     console.log(error);
     res.status(500).json({

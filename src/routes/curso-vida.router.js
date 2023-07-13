@@ -23,6 +23,7 @@ router.post("/perfiles", /* validarJWT, */ usuariosController.crearPerfil);
 //Rutas de Usuarios
 router.get("/usuario", /* validarJWT, */  usuariosController.listarUsuarios);
 router.post("/usuario", [validarUsuario,/*  validarJWT */],  usuariosController.crearUsuario);
+router.patch("/usuario/:id", /*  validarJWT */  usuariosController.editarUsuario);
 router.post("/login", loginController.login);
 router.get("/validar-token", validarJWT, loginController.validarToken);
 router.get("/exportar-excel/:CODIGO/:edadInicial/:edadFinal", cursoVidaController.cursoVidaExcel);

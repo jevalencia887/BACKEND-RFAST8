@@ -21,6 +21,7 @@ exports.login = async ( req, res ) => {
         }
 
         const Password = bcrypt.compareSync( password, Usuario[0].password );
+        console.log(Password, password, Usuario[0].password );
 
         if ( !Password ) {
             return res.status( 404 ).json({
