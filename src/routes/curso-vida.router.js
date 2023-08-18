@@ -24,9 +24,13 @@ router.post("/perfiles", /* validarJWT, */ usuariosController.crearPerfil);
 router.get("/usuario", /* validarJWT, */  usuariosController.listarUsuarios);
 router.post("/usuario", [validarUsuario,/*  validarJWT */],  usuariosController.crearUsuario);
 router.patch("/usuario/:id", /*  validarJWT */  usuariosController.editarUsuario);
+router.patch("/usuario/:id", /*  validarJWT */  usuariosController.editarUsuario);
+router.put("/usuario/:id/estado", /*  validarJWT */  usuariosController.actualizarEstadoUsuario);
 router.post("/login", loginController.login);
-router.get("/validar-token", validarJWT, loginController.validarToken);
+router.get("/validar-token/:id", validarJWT, loginController.validarToken);
 router.get("/exportar-excel/:CODIGO/:edadInicial/:edadFinal", cursoVidaController.cursoVidaExcel);
+router.get("/listar-permisos/",  usuariosController.listaPermisos );
+
 
 
 module.exports = router;

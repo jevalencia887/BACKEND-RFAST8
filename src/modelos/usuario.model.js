@@ -30,6 +30,10 @@ const { sequelize1 } = require("../BD-RFAS8/conexiondb");
   id_perfil: {
     type: DataTypes.INTEGER,
     require: true
+  },
+  estado: {
+    type: DataTypes.BOOLEAN,
+
   }
   
 });

@@ -15,16 +15,16 @@ class Server {
 
     async iniciarDB() {
         try {
-          sequelize1.authenticate(/* { alter: true }  */).then( () => {
-          /* sequelize1.sync({ alter: true }).then( () => { */
+          //sequelize1.authenticate(/* { alter: true }  */).then( () => {
+            sequelize1.sync({ alter: true }).then( () => {
             console.log( 'Conexion exitosa');
-          })
-          
+        })
+        
         } catch (error) {
-          console.error("Unable to connect to the database:", error);
-          console.log(error);
+            console.error("Unable to connect to the database:", error);
+            console.log(error);
         }
-      }
+    }
 
     middlewares() {
         this.app.use(cors());

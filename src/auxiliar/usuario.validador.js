@@ -4,7 +4,7 @@ const { validateResult } = require("../middlewares/validator")
 
 
 const validarUsuario = [ 
-       
+
 
     check('nombres'   , 'El nombre es obligatorio')
         .exists ()
@@ -18,7 +18,7 @@ const validarUsuario = [
         .isEmpty()
         .isString(),
     
-     check('email', 'El correo no tiene el formato correcto')
+    check('email', 'El correo no tiene el formato correcto')
         .exists ()
         .not    ()
         .isEmpty()
@@ -34,7 +34,7 @@ const validarUsuario = [
         .isInt(),
         
     check('cedula').custom( ( cedula ) => validarCedula( cedula ) ),
-     
+
     
     check('id_perfil', 'El perfil es obligatorio')
         .exists ()

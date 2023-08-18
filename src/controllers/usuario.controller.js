@@ -1,6 +1,8 @@
 const PERFIL = require("../modelos/perfil.model")
 const USUARIO = require("../modelos/usuario.model")
 const bcrypt = require('bcryptjs');
+const PERMISO = require("../modelos/permiso.model");
+const UsuarioPermiso = require("../modelos/usuario-permiso.model");
 
 
 exports.listaPerfiles = async (req, res) => {
@@ -54,7 +56,7 @@ exports.listarUsuarios = async (req, res) => {
   
     try {
     const listarUsuarios = await USUARIO.findAll({
-        include: { model: PERFIL }
+        include: [{ model: PERFIL }, {model: PERMISO}]
     });
     if (!listarUsuarios.length) {
 
@@ -71,11 +73,11 @@ exports.listarUsuarios = async (req, res) => {
 
 exports.crearUsuario = async(req, res) => {
     try {
-
+      console.log(req.body);
         const body = req.body;
         const salt = bcrypt.genSaltSync();
         let password = bcrypt.hashSync(String(body.cedula), salt)
-        console.log(password);
+        
   
         const Usuario = await USUARIO.create({
   
@@ -84,9 +86,17 @@ exports.crearUsuario = async(req, res) => {
           email: body.email,
           id_perfil: body.id_perfil,
           cedula: body.cedula,
-          password: password
+          password: password,
+          estado: true
   
         });
+
+        await UsuarioPermiso.bulkCreate(
+          body.permisos.map( (id_permiso) => ({
+            usuarioId: Usuario.id,
+            permisoId: id_permiso
+          }))
+        )
   
         res.status( 200 ).json({
             msg: 'Registro Exitoso',
@@ -137,3 +147,81 @@ exports.editarUsuario = async (req, res) => {
     });
   }
 };
+
+exports.actualizarEstadoUsuario = async (req, res) => {
+  try {
+    const { id } = req.params; // Obtener el ID del usuario a actualizar el estado
+    const { estado } = req.body; // Obtener el nuevo estado del usuario
+
+    // Buscar el usuario por ID
+    const usuario = await USUARIO.findByPk(id);
+    if (!usuario) {
+      return res.status(404).json({ msg: 'Usuario no encontrado' });
+    }
+
+    await USUARIO.update(
+      { estado },
+      {
+        where: {
+          id,
+        },
+      }
+    );
+
+    res.status(200).json({ msg: 'Estado de usuario actualizado' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error: error,
+      message: 'Error inesperado... revisar los logs',
+    });
+  }
+};
+
+exports.editarPermisos = async (req, res) => {
+  try {
+    const { id } = req.params; // Obtener el ID del usuario a editar
+
+    // Buscar el usuario por ID
+    const usuario = await USUARIO.findByPk(id);
+    if (!usuario) {
+      return res.status(404).json({ msg: 'Usuario no encontrado' });
+    }
+    
+    const actualizarPermisos = await UsuarioPermiso.update(
+      body, 
+      {
+        where: {
+          id
+        }
+      }
+    )
+
+    res.status(200).json({ msg: 'Usuario actualizado', data: actualizarPermisos });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error: error,
+      message: 'Error inesperado... revisar los logs',
+    });
+  }
+};
+
+exports.listaPermisos = async (req, res) => {
+  
+  try {
+
+    const listadoPermisos = await PERMISO.findAll({});
+    if (!listadoPermisos.length) {
+
+        return res.status(404).json({msg: 'No se Encontraron Permisos Registrados'});
+        
+    }
+
+  res.status(200).json({msg: 'Listado de Permisos', data: listadoPermisos})
+  } catch (error) {
+    return res.status(500).json({msg: error.message})
+  } 
+
+}
+

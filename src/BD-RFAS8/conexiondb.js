@@ -3,6 +3,7 @@ const { Sequelize } = require("sequelize");
 exports.sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
     dialect: 'mssql',
     host: process.env.DB_SERVER,
+    logging: false,
     dialectOptions: {
         requestTimeout: 90000000,
         options: {
