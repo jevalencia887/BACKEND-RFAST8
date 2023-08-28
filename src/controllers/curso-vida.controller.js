@@ -354,106 +354,105 @@ exports.buscar = async (req, res) => {
                 ROW_NUMBER() OVER (ORDER BY a.NUMDOCUM ASC) AS RowNum,
                 f.IPS,
                 g.NOMBRE AS NOMBRE_IPS,
-                     CASE a.TIPDOCUM 
-                     WHEN 1 THEN 'CEDULA DE CIUDADANIA'
-                     WHEN 2 THEN 'TARJETA DE IDENTIDAD'
-                     WHEN 3 THEN 'CEDULA DE EXTRANJERIA'
-                     WHEN 4 THEN 'REGISTRO CIVIL'
-                     WHEN 5 THEN 'PASAPORTE'
-                     WHEN 6 THEN 'ADULTO SIN IDENTIFICACION'
-                     WHEN 7 THEN 'MENOR SIN IDENTIFICACION'
-                     WHEN 9 THEN 'NACIDO VIVO'
-                     WHEN 10 THEN 'SALVO CONDUCTO'
-                     WHEN 12 THEN 'CARNE DIPLOMATICO'
-                     WHEN 13 THEN 'PERMISO ESPECIAL'
-                     WHEN 14 THEN 'RECIDENTE ESPECIAL'
-                     WHEN 15 THEN 'PERMISO PROTECCION TEMPORAL'
+                    CASE a.TIPDOCUM 
+                    WHEN 1 THEN 'CEDULA DE CIUDADANIA'
+                    WHEN 2 THEN 'TARJETA DE IDENTIDAD'
+                    WHEN 3 THEN 'CEDULA DE EXTRANJERIA'
+                    WHEN 4 THEN 'REGISTRO CIVIL'
+                    WHEN 5 THEN 'PASAPORTE'
+                    WHEN 6 THEN 'ADULTO SIN IDENTIFICACION'
+                    WHEN 7 THEN 'MENOR SIN IDENTIFICACION'
+                    WHEN 9 THEN 'NACIDO VIVO'
+                    WHEN 10 THEN 'SALVO CONDUCTO'
+                    WHEN 12 THEN 'CARNE DIPLOMATICO'
+                    WHEN 13 THEN 'PERMISO ESPECIAL'
+                    WHEN 14 THEN 'RECIDENTE ESPECIAL'
+                    WHEN 15 THEN 'PERMISO PROTECCION TEMPORAL'
                     ELSE 'OTRO'
-                 END AS TIPO_DOCUMENTO,
-                 a.POBLACION_ESPECIAL, 
-                     a.APELLIDO1 + ' ' + a.APELLIDO2 AS APELLIDOS,
-                     a.NOMBRE1 + '  ' + a.NOMBRE2 AS NOMBRES,
-                      DATEADD(DAY, 1, CAST(a.FECHANAC AS DATE)) AS FECHA_NACIMIENTO,  
-                     CASE a.SEXO 
-                     WHEN 2 THEN 'FEMENINO'
-                     WHEN 1 THEN 'MASCULINO' 
-                     ELSE 'OTRO'
-                     END AS GENERO, 
-                     CASE e.EMBARAZO 
-                     WHEN 0 THEN 'NO'
-                     WHEN 1 THEN 'EMBARAZADA' 
-                     END AS EMBARAZO, 
-                     CASE a.TIPDISCAP 
-                     WHEN 1 THEN 'CONDUCTA'
-                     WHEN 2 THEN 'COMUNICACION'
-                     WHEN 3 THEN 'CUIDADO PERSONAL'
-                     WHEN 4 THEN 'LOCOMOCION'
-                     WHEN 5 THEN 'DISPOSICION DEL CUERPO'
-                     WHEN 6 THEN 'DESTREZA'
-                     WHEN 7 THEN 'SITUACION'
-                     WHEN 8 THEN 'DETERMINADA ACTITUD'
-                     WHEN 9 THEN 'OTRO'
-                     END AS TIPO_DISCAPACIDAD, 
-                     CASE a.GRDDISCAP 
-                     WHEN 1 THEN 'LEVE'
-                     WHEN 2 THEN 'MODERADO' 
-                     WHEN 3 THEN 'SEVERA'
-                     END AS GRADO_DISCAPACIDAD, 
-                      a.DIRECRES AS DIRECCION_RECIDENCIA,  
-                      a.TELEFRES AS TELEFONO_RECIDENCIA, 
-                      a.CODBARES AS CODIGO_BARRIO, 
-                      d.NOMBRE AS COMUNA, 
-                      UPPER(c.NOMBRE) AS BARRIO, 
-                     CASE a.ETNICO 
-                     WHEN 1 THEN 'BLANCO'
-                     WHEN 2 THEN 'INDIGENA'
-                     WHEN 3 THEN 'AFRODECENDIENTE'
-                     WHEN 4 THEN 'MESTIZO(IND-BLA)'
-                     WHEN 5 THEN 'MULATO(NEG-BLA)'
-                     WHEN 6 THEN 'ZAMBO(IND-NEG)'
-                     WHEN 7 THEN 'GITANO(ROM)'
-                     WHEN 8 THEN 'RAIZAL(SAN ANDRES)'
-                     WHEN 9 THEN 'PALENQUERO'
-                     ELSE 'OTRO'
-                     END AS ETNICO, 
-                     UPPER(b.NOMBRE) AS PAIS,  
-                     h.NOMBRE AS CENTRO_PRODUCCION, 
-                     f.CODIGO, 
-                     CASE f.ATENDIDO 
-                     WHEN 0 THEN 'NO'
-                     WHEN 1 THEN 'SI'
-                     END AS ATENDIDO, 
-                     DATEADD(DAY, 1, CAST(e.FECHA AS DATE)) AS FECHA, 
-                     DATEADD(DAY, 1, CAST(f.ATENCION_FACTURA AS DATE)) AS ATENCION_FACTURA, 
-                     CASE f.ESTADO 
-                         WHEN  0 THEN 'DISPONIBLE'
-                         WHEN  1 THEN 'CONFIRMADO'
-                         WHEN  2 THEN 'INCUMPLIDA'
-                         WHEN  3 THEN 'CANCELADAS'
-                         WHEN  4 THEN 'CANCELADA POR EL PRESTADOR'
-                         END AS ESTADO, 
-                      DATEPART(DAY, a.FECHANAC) AS DIA, 
-                      DATEPART(MONTH, a.FECHANAC) AS MES, 
-                      DATEPART(YEAR, a.FECHANAC) AS AÑO, 
-                      CONCAT(e.CANTEDAD,   
-                      CASE e.FORMEDAD 
-                     WHEN 1 THEN 'AÑOS'
-                     WHEN 2 THEN 'MESES'
-                     WHEN 3 THEN 'DIAS'
-                     WHEN 4 THEN 'HORAS'
-                     END) AS EDAD, 
-                     a.NUMDOCUM AS NUMERO_DOCUMENTO,
-                     f.CODIGO_CUPS AS CUPS,
-                f.ATENCION_FACTURA AS DescripcionServicio
+                END AS TIPO_DOCUMENTO,
+                a.POBLACION_ESPECIAL, 
+                    a.APELLIDO1 + ' ' + a.APELLIDO2 AS APELLIDOS,
+                    a.NOMBRE1 + '  ' + a.NOMBRE2 AS NOMBRES,
+                    DATEADD(DAY, 1, CAST(a.FECHANAC AS DATE)) AS FECHA_NACIMIENTO,  
+                    CASE a.SEXO 
+                    WHEN 2 THEN 'FEMENINO'
+                    WHEN 1 THEN 'MASCULINO' 
+                    ELSE 'OTRO'
+                    END AS GENERO, 
+                    CASE e.EMBARAZO 
+                    WHEN 0 THEN 'NO'
+                    WHEN 1 THEN 'EMBARAZADA' 
+                    END AS EMBARAZO, 
+                    CASE a.TIPDISCAP 
+                    WHEN 1 THEN 'CONDUCTA'
+                    WHEN 2 THEN 'COMUNICACION'
+                    WHEN 3 THEN 'CUIDADO PERSONAL'
+                    WHEN 4 THEN 'LOCOMOCION'
+                    WHEN 5 THEN 'DISPOSICION DEL CUERPO'
+                    WHEN 6 THEN 'DESTREZA'
+                    WHEN 7 THEN 'SITUACION'
+                    WHEN 8 THEN 'DETERMINADA ACTITUD'
+                    WHEN 9 THEN 'OTRO'
+                    END AS TIPO_DISCAPACIDAD, 
+                    CASE a.GRDDISCAP 
+                    WHEN 1 THEN 'LEVE'
+                    WHEN 2 THEN 'MODERADO' 
+                    WHEN 3 THEN 'SEVERA'
+                    END AS GRADO_DISCAPACIDAD, 
+                    a.DIRECRES AS DIRECCION_RECIDENCIA,  
+                    a.TELEFRES AS TELEFONO_RECIDENCIA, 
+                    a.CODBARES AS CODIGO_BARRIO, 
+                    d.NOMBRE AS COMUNA, 
+                    UPPER(c.NOMBRE) AS BARRIO, 
+                    CASE a.ETNICO 
+                    WHEN 1 THEN 'BLANCO'
+                    WHEN 2 THEN 'INDIGENA'
+                    WHEN 3 THEN 'AFRODECENDIENTE'
+                    WHEN 4 THEN 'MESTIZO(IND-BLA)'
+                    WHEN 5 THEN 'MULATO(NEG-BLA)'
+                    WHEN 6 THEN 'ZAMBO(IND-NEG)'
+                    WHEN 7 THEN 'GITANO(ROM)'
+                    WHEN 8 THEN 'RAIZAL(SAN ANDRES)'
+                    WHEN 9 THEN 'PALENQUERO'
+                    ELSE 'OTRO'
+                    END AS ETNICO, 
+                    UPPER(b.NOMBRE) AS PAIS,  
+                    h.NOMBRE AS CENTRO_PRODUCCION, 
+                    f.CODIGO, 
+                    CASE f.ATENDIDO 
+                    WHEN 0 THEN 'NO'
+                    WHEN 1 THEN 'SI'
+                    END AS ATENDIDO, 
+                    DATEADD(DAY, 1, CAST(e.FECHA AS DATE)) AS FECHA, 
+                    DATEADD(DAY, 1, CAST(f.ATENCION_FACTURA AS DATE)) AS ATENCION_FACTURA, 
+                    CASE f.ESTADO 
+                    WHEN  0 THEN 'DISPONIBLE'
+                    WHEN  1 THEN 'CONFIRMADO'
+                    WHEN  2 THEN 'INCUMPLIDA'
+                    WHEN  3 THEN 'CANCELADAS'
+                    WHEN  4 THEN 'CANCELADA POR EL PRESTADOR'
+                    END AS ESTADO, 
+                    DATEPART(DAY, a.FECHANAC) AS DIA, 
+                    DATEPART(MONTH, a.FECHANAC) AS MES, 
+                    DATEPART(YEAR, a.FECHANAC) AS AÑO, 
+                    CONCAT(e.CANTEDAD, + ' ' +
+                    CASE e.FORMEDAD 
+                    WHEN 1 THEN 'AÑOS'
+                    WHEN 2 THEN 'MESES'
+                    WHEN 3 THEN 'DIAS'
+                    WHEN 4 THEN 'HORAS'
+                    END) AS EDAD,  
+                    a.NUMDOCUM AS NUMERO_DOCUMENTO,
+                    f.CODIGO_CUPS AS DescripcionServicio
                 FROM  fac_m_tarjetero a 
-                      JOIN gen_p_paises b ON b.PAIS = a.PAIS  
-                      JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES  
-                      JOIN fac_p_comuna d ON d.CODIGO = c.COMUNA  
-                      JOIN fac_m_factura e ON e.HISTORIA = a.HISTORIA 
-                      JOIN fac_m_citas f ON f.HISTORIA = e.HISTORIA 
-                      JOIN fac_p_control g ON g.IPS = f.IPS 
-                      JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD  
-                      JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS 
+                    JOIN gen_p_paises b ON b.PAIS = a.PAIS  
+                    JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES  
+                    JOIN fac_p_comuna d ON d.CODIGO = c.COMUNA  
+                    JOIN fac_m_factura e ON e.HISTORIA = a.HISTORIA 
+                    JOIN fac_m_citas f ON f.HISTORIA = e.HISTORIA 
+                    JOIN fac_p_control g ON g.IPS = f.IPS 
+                    JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD  
+                    JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS 
             WHERE h.CODIGO = ${CODIGO}
                 AND e.CANTEDAD BETWEEN ${edadInicial} AND ${edadFinal}
                 AND f.ATENCION_FACTURA IS NOT NULL
@@ -461,13 +460,25 @@ exports.buscar = async (req, res) => {
                 ${it != "" ? 'AND ('+ it.substring(3, it.length)+')' : ''}
             )
             SELECT DISTINCT
+            NOMBRE_IPS,
             TIPO_DOCUMENTO,
             NUMERO_DOCUMENTO,
             APELLIDOS,
             NOMBRES,
+            FECHA_NACIMIENTO,
+            GENERO,
+            EMBARAZO,
+            DIRECCION_RECIDENCIA,
+            TELEFONO_RECIDENCIA,
+            COMUNA,
+            BARRIO,
+            ETNICO,
+            PAIS,
+            CODIGO,
             ATENCION_FACTURA,
             ATENDIDO,
-            CUPS
+            
+            EDAD,
             DescripcionServicio
             FROM NumberedResults
             WHERE RowNum BETWEEN 1 AND 100; `
