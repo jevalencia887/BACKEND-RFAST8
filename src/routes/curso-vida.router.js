@@ -12,9 +12,9 @@ const router = Router();
 
 
 //Rutas para Cursos de Vida
-router.get("/curso-vida/:CODIGO/:edadInicial/:edadFinal", cursoVidaController.cursoVida);
-router.post("/curso-vida/buscar/:CODIGO/:edadInicial/:edadFinal", cursoVidaController.buscar);
-router.get("/dashboard-servicios", DashboardServiciosController.servicios);
+router.get("/curso-vida/:CODIGO/:edadInicial/:edadFinal", validarJWT, cursoVidaController.cursoVida);
+router.post("/curso-vida/buscar/:CODIGO/:edadInicial/:edadFinal", validarJWT, cursoVidaController.buscar);
+router.get("/dashboard-servicios", validarJWT, DashboardServiciosController.servicios);
 
 //Rutas para perfiles
 router.get("/perfiles", validarJWT, usuariosController.listaPerfiles);
@@ -28,7 +28,7 @@ router.patch("/usuario/:id",  validarJWT,  usuariosController.editarUsuario);
 router.put("/usuario/:id/estado",  validarJWT,  usuariosController.actualizarEstadoUsuario);
 router.post("/login", loginController.login);
 router.get("/validar-token/:id", validarJWT, loginController.validarToken);
-router.get("/exportar-excel/:CODIGO/:edadInicial/:edadFinal", validarJWT, cursoVidaController.cursoVidaExcel);
+router.get("/exportar-excel/:CODIGO/:edadInicial/:edadFinal", /* validarJWT, */ cursoVidaController.cursoVidaExcel);
 router.get("/listar-permisos/", validarJWT, usuariosController.listaPermisos );
 
 

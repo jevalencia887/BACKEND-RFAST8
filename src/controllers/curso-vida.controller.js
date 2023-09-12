@@ -10,10 +10,10 @@ exports.cursoVida = async (req, res) => {
         const page = req.query.page || 1;
         const limit = req.query.limit || 10;
         const offset = (page - 1) * limit;
-        const query = `SELECT DISTINCT *
+        const query = `SELECT *
 	    FROM
 	    (
-		SELECT 
+		SELECT DISTINCT
         f.IPS, 
         g.NOMBRE AS NOMBRE_IPS, 
         CASE a.TIPDOCUM
@@ -106,7 +106,7 @@ exports.cursoVida = async (req, res) => {
         END) AS EDAD,
 		a.NUMDOCUM AS NUMERO_DOCUMENTO,
 		j.CODIGO AS CodigoServicio, 
-        f.ATENCION_FACTURA AS DescripcionServicio
+        CONVERT(varchar, CONVERT(date, f.ATENCION_FACTURA), 120) AS DescripcionServicio 
         FROM 
 		fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
@@ -205,6 +205,12 @@ exports.buscar = async (req, res) => {
         const CODIGO = req.params.CODIGO; 
         const edadInicial = req.params.edadInicial;
         const edadFinal = req.params.edadFinal;
+        const primeraInfancia = [[890105], [890114], [890115], [890116], [890201], [890203], [890205], [890206], [890263], [890283], [890301], [890303], 
+        [890305], [890306], [890363], [890383], [902213], [950601], [990101], [990102], [990103], [990104], [990105], [990106], 
+        [990107], [990108], [990109], [990110], [990111], [990112], [990201], [990203], [990204], [990206], [990207], [990208], 
+        [990209], [990212], [990213], [990221], [990222], [990223], [990224], [993102], [993106], [993122], [993130], [993501], 
+        [99350101], [993502], [993503], [993504], [993509], [99351003], [993512], [993522], [997102], [997106], [997310], 
+        ['P0000002'], ['P0000004'], ['P0000006'], ['P0000009'], ['P0000013'], ['P0000014']]
         const page = req.query.page || 1;
         const limit = req.query.limit || 10;
         const offset = (page - 1) * limit;
@@ -223,9 +229,9 @@ exports.buscar = async (req, res) => {
             
         }
         
-        const query = `SELECT DISTINCT TOP(3000) *
-	    FROM
-	    (
+    const query = `SELECT DISTINCT *
+	FROM
+	(
 		SELECT 
         f.IPS, 
         g.NOMBRE AS NOMBRE_IPS, 
@@ -319,7 +325,7 @@ exports.buscar = async (req, res) => {
         END) AS EDAD,
 		a.NUMDOCUM AS NUMERO_DOCUMENTO,
 		j.CODIGO AS CodigoServicio, 
-        f.ATENCION_FACTURA AS DescripcionServicio
+        CONVERT(varchar, CONVERT(date, f.ATENCION_FACTURA), 120) AS DescripcionServicio
         FROM 
 		fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
@@ -336,12 +342,7 @@ exports.buscar = async (req, res) => {
 	PIVOT
 	(
 	MAX(DescripcionServicio)
-	FOR CodigoServicio IN ([890105], [890114], [890115], [890116], [890201], [890203], [890205], [890206], [890263], [890283], [890301], [890303], 
-                            [890305], [890306], [890363], [890383], [902213], [950601], [990101], [990102], [990103], [990104], [990105], [990106], 
-                            [990107], [990108], [990109], [990110], [990111], [990112], [990201], [990203], [990204], [990206], [990207], [990208], 
-                            [990209], [990212], [990213], [990221], [990222], [990223], [990224], [993102], [993106], [993122], [993130], [993501], 
-                            [99350101], [993502], [993503], [993504], [993509], [99351003], [993512], [993522], [997102], [997106], [997310], 
-                            [P0000002], [P0000004], [P0000006], [P0000009], [P0000013], [P0000014])
+	FOR CodigoServicio IN (${primeraInfancia})
 	) AS PivotTable
         ${it != "" ? 'AND ('+ it.substring(3, it.length)+')' : ''}
         ORDER BY a.NUMDOCUM ASC
@@ -369,8 +370,8 @@ exports.buscar = async (req, res) => {
                     WHEN 14 THEN 'RECIDENTE ESPECIAL'
                     WHEN 15 THEN 'PERMISO PROTECCION TEMPORAL'
                     ELSE 'OTRO'
-                END AS TIPO_DOCUMENTO,
-                a.POBLACION_ESPECIAL, 
+                    END AS TIPO_DOCUMENTO,
+                    a.POBLACION_ESPECIAL, 
                     a.APELLIDO1 + ' ' + a.APELLIDO2 AS APELLIDOS,
                     a.NOMBRE1 + '  ' + a.NOMBRE2 AS NOMBRES,
                     DATEADD(DAY, 1, CAST(a.FECHANAC AS DATE)) AS FECHA_NACIMIENTO,  
@@ -444,7 +445,7 @@ exports.buscar = async (req, res) => {
                     END) AS EDAD,  
                     a.NUMDOCUM AS NUMERO_DOCUMENTO,
                     f.CODIGO_CUPS AS DescripcionServicio
-                FROM  fac_m_tarjetero a 
+                    FROM  fac_m_tarjetero a 
                     JOIN gen_p_paises b ON b.PAIS = a.PAIS  
                     JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES  
                     JOIN fac_p_comuna d ON d.CODIGO = c.COMUNA  
@@ -453,11 +454,11 @@ exports.buscar = async (req, res) => {
                     JOIN fac_p_control g ON g.IPS = f.IPS 
                     JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD  
                     JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS 
-            WHERE h.CODIGO = ${CODIGO}
-                AND e.CANTEDAD BETWEEN ${edadInicial} AND ${edadFinal}
-                AND f.ATENCION_FACTURA IS NOT NULL
-                AND YEAR(f.ATENCION_FACTURA) BETWEEN (YEAR(GETDATE()) - 5) AND YEAR(GETDATE())
-                ${it != "" ? 'AND ('+ it.substring(3, it.length)+')' : ''}
+                    WHERE h.CODIGO = ${CODIGO}
+                    AND e.CANTEDAD BETWEEN ${edadInicial} AND ${edadFinal}
+                    AND f.ATENCION_FACTURA IS NOT NULL
+                    AND YEAR(f.ATENCION_FACTURA) BETWEEN (YEAR(GETDATE()) - 5) AND YEAR(GETDATE())
+                    ${it != "" ? 'AND ('+ it.substring(3, it.length)+')' : ''}
             )
             SELECT DISTINCT
             NOMBRE_IPS,
@@ -477,7 +478,6 @@ exports.buscar = async (req, res) => {
             CODIGO,
             ATENCION_FACTURA,
             ATENDIDO,
-            
             EDAD,
             DescripcionServicio
             FROM NumberedResults
@@ -569,9 +569,9 @@ exports.cursoVidaExcel = async (req, res) => {
         const query = 
         ` 
         SELECT DISTINCT *
-	      FROM
+	    FROM
 	    (
-		SELECT 
+		SELECT DISTINCT
         f.IPS, 
         g.NOMBRE AS NOMBRE_IPS, 
         CASE a.TIPDOCUM
@@ -589,7 +589,8 @@ exports.cursoVidaExcel = async (req, res) => {
         WHEN 14 THEN 'RECIDENTE ESPECIAL'
         WHEN 15 THEN 'PERMISO PROTECCION TEMPORAL'
         ELSE 'OTRO'
-        END AS TIPO_DOCUMENTO,				 
+        END AS TIPO_DOCUMENTO,
+		e.DOCUMENTO,
         a.POBLACION_ESPECIAL,
 		a.APELLIDO1 + '  ' + a.APELLIDO2 AS APELLIDOS,
         a.NOMBRE1 + '  ' + a.NOMBRE2 AS NOMBRES,
@@ -643,8 +644,6 @@ exports.cursoVidaExcel = async (req, res) => {
         WHEN 0 THEN 'NO'
         WHEN 1 THEN 'SI'
         END AS ATENDIDO,
-        DATEADD(DAY, 1, CAST(e.FECHA AS DATE)) AS FECHA,
-        DATEADD(DAY, 1, CAST(f.ATENCION_FACTURA AS DATE)) AS ATENCION_FACTURA,
 		CASE f.ESTADO
             WHEN  0 THEN 'DISPONIBLE'
             WHEN  1 THEN 'CONFIRMADO'
@@ -664,7 +663,7 @@ exports.cursoVidaExcel = async (req, res) => {
         END) AS EDAD,
 		a.NUMDOCUM AS NUMERO_DOCUMENTO,
 		j.CODIGO AS CodigoServicio, 
-        j.NOMBRE AS DescripcionServicio
+		CONVERT(varchar, CONVERT(date, f.ATENCION_FACTURA), 120) + '  //  '  + f.CODIGO_CUPS AS DescripcionServicio
         FROM 
 		fac_m_tarjetero a
         JOIN gen_p_paises b ON b.PAIS = a.PAIS 
@@ -675,8 +674,11 @@ exports.cursoVidaExcel = async (req, res) => {
         JOIN fac_p_control g ON g.IPS = f.IPS
         JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD 
         JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
-        WHERE h.CODIGO = ${CODIGO} AND e.CANTEDAD BETWEEN ${edadInicial} AND ${edadFinal} AND f.ATENCION_FACTURA  IS NOT NULL 
-		AND YEAR(f.ATENCION_FACTURA) BETWEEN (YEAR(GETDATE()) - 5) AND YEAR(GETDATE())
+        WHERE h.CODIGO = ${CODIGO}
+        AND e.CANTEDAD BETWEEN ${edadInicial} AND ${edadFinal}
+        AND f.ATENCION_FACTURA IS NOT NULL 
+        AND f.ATENCION_FACTURA >= DATEADD(YEAR, -5, GETDATE())
+        AND f.ATENCION_FACTURA < GETDATE()
 			) AS SourceTable
 	PIVOT
 	(
@@ -688,7 +690,7 @@ exports.cursoVidaExcel = async (req, res) => {
                             [99350101], [993502], [993503], [993504], [993509], [99351003], [993512], [993522], [997102], [997106], [997310], 
                             [P0000002], [P0000004], [P0000006], [P0000009], [P0000013], [P0000014])
 	) AS PivotTable
-        ORDER BY NUMERO_DOCUMENTO ASC
+    ORDER BY NUMERO_DOCUMENTO ASC
         OFFSET ${offset} ROWS
         FETCH NEXT ${limit} ROWS ONLY`;
         const resul = await sequelize.query(query, {type: QueryTypes.SELECT}); 

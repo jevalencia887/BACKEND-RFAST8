@@ -136,7 +136,28 @@ exports.editarUsuario = async (req, res) => {
           id
         }
       }
-    )
+    );
+     
+    if (body.permisos.length) {
+      console.log(body.permisos);
+      // Primero, eliminamos los permisos existentes del usuario
+      await UsuarioPermiso.destroy({
+        where: {
+          usuarioId: id
+        }
+      });
+    
+      // Luego, creamos los nuevos registros de permisos
+      const uniquePermisos = [...new Set(body.permisos)]; // Eliminar duplicados
+      await UsuarioPermiso.bulkCreate(
+        uniquePermisos.map(id_permiso => ({
+          usuarioId: id,
+          permisoId: id_permiso
+        }))
+      );
+    }
+    
+    
 
     res.status(200).json({ msg: 'Usuario actualizado', data: actualizarUsuario });
   } catch (error) {
