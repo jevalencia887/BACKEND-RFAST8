@@ -138,7 +138,7 @@ exports.editarUsuario = async (req, res) => {
       }
     );
      
-    if (body.permisos.length) {
+    if (body.permisos) {
       console.log(body.permisos);
       // Primero, eliminamos los permisos existentes del usuario
       await UsuarioPermiso.destroy({
