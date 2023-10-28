@@ -137,7 +137,7 @@ exports.editarUsuario = async (req, res) => {
         }
       }
     );
-     
+
     if (body.permisos) {
       console.log(body.permisos);
       // Primero, eliminamos los permisos existentes del usuario

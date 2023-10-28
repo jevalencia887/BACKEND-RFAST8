@@ -28,9 +28,12 @@ router.patch("/usuario/:id",  validarJWT,  usuariosController.editarUsuario);
 router.put("/usuario/:id/estado",  validarJWT,  usuariosController.actualizarEstadoUsuario);
 router.post("/login", loginController.login);
 router.get("/validar-token/:id", validarJWT, loginController.validarToken);
-router.get("/exportar-excel/:CODIGO/:edadInicial/:edadFinal", /* validarJWT, */ cursoVidaController.cursoVidaExcel);
-router.get("/exportar-excel1/:CODIGO/:edadInicial/:edadFinal", /* validarJWT, */ cursoVidaController.cursoVidaExcel);
-router.get("/exportar-excel2/:CODIGO/:edadInicial/:edadFinal", /* validarJWT, */ cursoVidaController.cursoVidaExcel);
+router.get("/exportar-excel0/:CODIGO/:edadInicial/:edadFinal", /* validarJWT, */ cursoVidaController.cursoVidaExcel0);
+router.get("/exportar-excel1/:CODIGO/:edadInicial/:edadFinal", /* validarJWT, */ cursoVidaController.cursoVidaExcel1);
+router.get("/exportar-excel2/:CODIGO/:edadInicial/:edadFinal", /* validarJWT, */ cursoVidaController.cursoVidaExcel2);
+router.get("/exportar-excel3/:CODIGO/:edadInicial/:edadFinal", /* validarJWT, */ cursoVidaController.cursoVidaExcel3);
+router.get("/exportar-excel4/:CODIGO/:edadInicial/:edadFinal", /* validarJWT, */ cursoVidaController.cursoVidaExcel4);
+router.get("/exportar-excel5/:CODIGO/:edadInicial/:edadFinal", /* validarJWT, */ cursoVidaController.cursoVidaExcel5);
 router.get("/listar-permisos/", validarJWT, usuariosController.listaPermisos );
 
 
