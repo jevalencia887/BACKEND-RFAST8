@@ -24,7 +24,7 @@ router.post("/perfiles", validarJWT, usuariosController.crearPerfil);
 router.get("/usuario", validarJWT,  usuariosController.listarUsuarios);
 router.post("/usuario", [validarUsuario, validarJWT,],  usuariosController.crearUsuario);
 router.patch("/usuario/:id",  validarJWT,  usuariosController.editarUsuario);
-/* router.patch("/usuario/:id",  validarJWT,  usuariosController.editarUsuario); */
+router.get("/buscar-usuario/:parametro",  /* validarJWT, */  usuariosController.buscarUsuarios);
 router.put("/usuario/:id/estado",  validarJWT,  usuariosController.actualizarEstadoUsuario);
 router.post("/login", loginController.login);
 router.get("/validar-token/:id", validarJWT, loginController.validarToken);

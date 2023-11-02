@@ -9,180 +9,211 @@ exports.cursoVida = async (req, res) => {
         const CODIGO = req.params.CODIGO; 
         const edadInicial = req.params.edadInicial;
         const edadFinal = req.params.edadFinal;
+        const page = req.query.page || 1;
+        const limit = req.query.limit || 50;
+        const offset = (page - 1) * limit;
         const query = `
         DECLARE @FechaInicial DATE = DATEADD(YEAR, -5, GETDATE());
         DECLARE @FechaFinal DATE = GETDATE();
-
-        CREATE TABLE #TempResults (
-            DUPLICADOS NVARCHAR(255), 
-            IPS NVARCHAR(255), 
-            NOMBRE_IPS NVARCHAR(255),
-            TIPO_DOCUMENTO NVARCHAR(255),
-            POBLACION_ESPECIAL INT, 
-            APELLIDOS NVARCHAR(255),
-            NOMBRES NVARCHAR(255),
-            FECHA_NACIMIENTO DATE,  
-            GENERO NVARCHAR(50), 
-            EMBARAZO NVARCHAR(10), 
-            TIPO_DISCAPACIDAD NVARCHAR(50), 
-            GRADO_DISCAPACIDAD NVARCHAR(50), 
-            DIRECCION_RESIDENCIA NVARCHAR(255), 
-            TELEFONO_RESIDENCIA NVARCHAR(20), 
-            CODIGO_BARRIO NVARCHAR(255),  
-            COMUNA NVARCHAR(255), 
-            BARRIO NVARCHAR(255), 
-            ETNICO NVARCHAR(50), 
-            PAIS NVARCHAR(255),  
-            CENTRO_PRODUCCION NVARCHAR(255), 
-            CODIGO NVARCHAR(255),  
-            ATENDIDO NVARCHAR(5), 
-            ATENCION_FACTURA DATE, 
-            ESTADO NVARCHAR(50), 
-            DIA NVARCHAR(5),  
-            MES NVARCHAR(5),  
-            AÑO NVARCHAR(5),  
-            EDAD NVARCHAR(50),  
-            NUMDOCUM NVARCHAR(255),
-            DescripcionServicio NVARCHAR(255),
-            NOMBRE_SERVICIO NVARCHAR(255)
-        );
-        
-        INSERT INTO #TempResults
-        SELECT
-            ROW_NUMBER() OVER (PARTITION BY a.NUMDOCUM, f.IPS, g.NOMBRE, a.TIPDOCUM, a.POBLACION_ESPECIAL, a.APELLIDO1,
-                                            a.NOMBRE1, a.FECHANAC, a.SEXO, e.EMBARAZO, a.TIPDISCAP, a.GRDDISCAP, a.DIRECRES, a.TELEFRES, 
-                                            a.CODBARES, d.NOMBRE, c.NOMBRE, a.ETNICO, b.NOMBRE, h.NOMBRE, f.CODIGO, f.ATENDIDO, f.ESTADO,
-                                            a.FECHANAC, a.FECHANAC, a.FECHANAC, e.CANTEDAD, e.FORMEDAD, f.ATENCION_FACTURA, j.CODIGO
-            ORDER BY a.NUMDOCUM) AS DUPLICADO,
-            f.IPS,
-            g.NOMBRE AS NOMBRE_IPS,
-            CASE a.TIPDOCUM 
-            WHEN 1 THEN 'CEDULA DE CIUDADANIA'
-            WHEN 2 THEN 'TARJETA DE IDENTIDAD'
-            WHEN 3 THEN 'CEDULA DE EXTRANJERIA'
-            WHEN 4 THEN 'REGISTRO CIVIL'
-            WHEN 5 THEN 'PASAPORTE'
-            WHEN 6 THEN 'ADULTO SIN IDENTIFICACION'
-            WHEN 7 THEN 'MENOR SIN IDENTIFICACION'
-            WHEN 9 THEN 'NACIDO VIVO'
-            WHEN 10 THEN 'SALVO CONDUCTO'
-            WHEN 12 THEN 'CARNE DIPLOMATICO'
-            WHEN 13 THEN 'PERMISO ESPECIAL'
-            WHEN 14 THEN 'RECIDENTE ESPECIAL'
-            WHEN 15 THEN 'PERMISO PROTECCION TEMPORAL'
-            ELSE 'OTRO'
-            END AS TIPO_DOCUMENTO,
-            a.POBLACION_ESPECIAL, 
-            a.APELLIDO1 + ' ' + a.APELLIDO2 AS APELLIDOS,
-            a.NOMBRE1 + '  ' + a.NOMBRE2 AS NOMBRES,
-            DATEADD(DAY, 1, CAST(a.FECHANAC AS DATE)) AS FECHA_NACIMIENTO,  
-            CASE a.SEXO 
-            WHEN 2 THEN 'FEMENINO'
-            WHEN 1 THEN 'MASCULINO' 
-            ELSE 'OTRO'
-            END AS GENERO, 
-            CASE e.EMBARAZO 
-            WHEN 0 THEN 'NO'
-            WHEN 1 THEN 'EMBARAZADA' 
-            END AS EMBARAZO, 
-            CASE a.TIPDISCAP 
-            WHEN 1 THEN 'CONDUCTA'
-            WHEN 2 THEN 'COMUNICACION'
-            WHEN 3 THEN 'CUIDADO PERSONAL'
-            WHEN 4 THEN 'LOCOMOCION'
-            WHEN 5 THEN 'DISPOSICION DEL CUERPO'
-            WHEN 6 THEN 'DESTREZA'
-            WHEN 7 THEN 'SITUACION'
-            WHEN 8 THEN 'DETERMINADA ACTITUD'
-            WHEN 9 THEN 'OTRO'
-            END AS TIPO_DISCAPACIDAD, 
-            CASE a.GRDDISCAP 
-            WHEN 1 THEN 'LEVE'
-            WHEN 2 THEN 'MODERADO' 
-            WHEN 3 THEN 'SEVERA'
-            END AS GRADO_DISCAPACIDAD, 
-            a.DIRECRES AS DIRECCION_RESIDENCIA, 
-            a.TELEFRES AS TELEFONO_RESIDENCIA, 
-            a.CODBARES AS CODIGO_BARRIO, 
-            d.NOMBRE AS COMUNA, 
-            UPPER(c.NOMBRE) AS BARRIO, 
-            CASE a.ETNICO 
-            WHEN 1 THEN 'BLANCO'
-            WHEN 2 THEN 'INDIGENA'
-            WHEN 3 THEN 'AFRODECENDIENTE'
-            WHEN 4 THEN 'MESTIZO(IND-BLA)'
-            WHEN 5 THEN 'MULATO(NEG-BLA)'
-            WHEN 6 THEN 'ZAMBO(IND-NEG)'
-            WHEN 7 THEN 'GITANO(ROM)'
-            WHEN 8 THEN 'RAIZAL(SAN ANDRES)'
-            WHEN 9 THEN 'PALENQUERO'
-            ELSE 'OTRO'
-            END AS ETNICO, 
-            UPPER(b.NOMBRE) AS PAIS,  
-            h.NOMBRE AS CENTRO_PRODUCCION, 
-            f.CODIGO, 
-            CASE f.ATENDIDO 
-            WHEN 0 THEN 'NO'
-            WHEN 1 THEN 'SI'
-            END AS ATENDIDO, 
-            DATEADD(DAY, 1, CAST(f.ATENCION_FACTURA AS DATE)) AS ATENCION_FACTURA, 
-            CASE f.ESTADO 
-            WHEN  0 THEN 'DISPONIBLE'
-            WHEN  1 THEN 'CONFIRMADO'
-            WHEN  2 THEN 'INCUMPLIDA'
-            WHEN  3 THEN 'CANCELADAS'
-            WHEN  4 THEN 'CANCELADA POR EL PRESTADOR'
-            END AS ESTADO, 
-            DATEPART(DAY, a.FECHANAC) AS DIA, 
-            DATEPART(MONTH, a.FECHANAC) AS MES, 
-            DATEPART(YEAR, a.FECHANAC) AS AÑO, 
-            CONCAT(e.CANTEDAD, + ' ' +
-            CASE e.FORMEDAD 
-            WHEN 1 THEN 'AÑOS'
-            WHEN 2 THEN 'MESES'
-            WHEN 3 THEN 'DIAS'
-            WHEN 4 THEN 'HORAS'
-            END) AS EDAD,  
-            CONVERT(NVARCHAR(255), a.NUMDOCUM) AS NUMDOCUM,
-            CONVERT(varchar, CONVERT(date, ATENCION_FACTURA), 120) + '  //  '  + j.CODIGO AS DescripcionServicio,
-            j.NOMBRE AS NOMBRE_SERVICIO
-            FROM fac_m_tarjetero a 
-            INNER JOIN gen_p_paises b ON b.PAIS = a.PAIS  
-            INNER JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES  
-            INNER JOIN fac_p_comuna d ON d.CODIGO = c.COMUNA  
-            INNER JOIN fac_m_factura e ON e.HISTORIA = a.HISTORIA 
-            INNER JOIN fac_m_citas f ON f.HISTORIA = e.HISTORIA 
-            INNER JOIN fac_p_control g ON g.IPS = f.IPS 
-            INNER JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD  
-            INNER JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS 
-            WHERE h.CODIGO = ${CODIGO}
-            AND e.CANTEDAD BETWEEN ${edadInicial} AND ${edadFinal}
-            AND f.ATENCION_FACTURA IS NOT NULL
-            AND f.CODIGO_CUPS IS NOT NULL
-            AND f.ATENDIDO = 1
-            AND f.ESTADO = 1
-            AND f.ATENCION_FACTURA BETWEEN @FechaInicial AND @FechaFinal;
-        
-        ;WITH Duplicates AS (
-            SELECT *,
-                ROW_NUMBER() OVER (PARTITION BY NUMDOCUM, NOMBRE_SERVICIO ORDER BY DUPLICADOS) AS RowNum
+    
+            CREATE TABLE #TempResults (
+                DUPLICADOS NVARCHAR(255), 
+                IPS NVARCHAR(255), 
+                NOMBRE_IPS NVARCHAR(255),
+                TIPO_DOCUMENTO NVARCHAR(255),
+                POBLACION_ESPECIAL NVARCHAR(255), 
+                APELLIDOS NVARCHAR(255),
+                NOMBRES NVARCHAR(255),
+                FECHA_NACIMIENTO DATE,  
+                GENERO NVARCHAR(50), 
+                EMBARAZO NVARCHAR(10), 
+                TIPO_DISCAPACIDAD NVARCHAR(50), 
+                GRADO_DISCAPACIDAD NVARCHAR(50), 
+                DIRECCION_RESIDENCIA NVARCHAR(255), 
+                TELEFONO_RESIDENCIA NVARCHAR(20), 
+                CODIGO_BARRIO NVARCHAR(255),  
+                COMUNA NVARCHAR(255), 
+                BARRIO NVARCHAR(255), 
+                ETNICO NVARCHAR(50), 
+                PAIS NVARCHAR(255),  
+                CENTRO_PRODUCCION NVARCHAR(255), 
+                CODIGO NVARCHAR(255),  
+                ATENDIDO NVARCHAR(5), 
+                ATENCION_FACTURA DATE, 
+                ESTADO NVARCHAR(50), 
+                DIA NVARCHAR(5),  
+                MES NVARCHAR(5),  
+                AÑO NVARCHAR(5),  
+                EDAD NVARCHAR(50),  
+                NUMDOCUM NVARCHAR(255),
+                DescripcionServicio NVARCHAR(255),
+                NOMBRE_SERVICIO NVARCHAR(255)
+            );
+            
+            INSERT INTO #TempResults
+            SELECT
+                ROW_NUMBER() OVER (PARTITION BY a.NUMDOCUM, f.IPS, g.NOMBRE, a.TIPDOCUM, q.POBLACION_ESPECIAL, a.APELLIDO1,
+                                                a.NOMBRE1, a.FECHANAC, a.SEXO, e.EMBARAZO, a.TIPDISCAP, a.GRDDISCAP, a.DIRECRES, a.TELEFRES, 
+                                                a.CODBARES, d.NOMBRE, c.NOMBRE, a.ETNICO, b.NOMBRE, h.NOMBRE, f.CODIGO, f.ATENDIDO, f.ESTADO,
+                                                a.FECHANAC, a.FECHANAC, a.FECHANAC, e.CANTEDAD, e.FORMEDAD, f.ATENCION_FACTURA, j.CODIGO
+                ORDER BY a.NUMDOCUM DESC) AS DUPLICADO,
+                f.IPS,
+                g.NOMBRE AS NOMBRE_IPS,
+                CASE a.TIPDOCUM 
+                WHEN 1 THEN 'CEDULA DE CIUDADANIA'
+                WHEN 2 THEN 'TARJETA DE IDENTIDAD'
+                WHEN 3 THEN 'CEDULA DE EXTRANJERIA'
+                WHEN 4 THEN 'REGISTRO CIVIL'
+                WHEN 5 THEN 'PASAPORTE'
+                WHEN 6 THEN 'ADULTO SIN IDENTIFICACION'
+                WHEN 7 THEN 'MENOR SIN IDENTIFICACION'
+                WHEN 9 THEN 'NACIDO VIVO'
+                WHEN 10 THEN 'SALVO CONDUCTO'
+                WHEN 12 THEN 'CARNE DIPLOMATICO'
+                WHEN 13 THEN 'PERMISO ESPECIAL'
+                WHEN 14 THEN 'RECIDENTE ESPECIAL'
+                WHEN 15 THEN 'PERMISO PROTECCION TEMPORAL'
+                ELSE 'OTRO'
+                END AS TIPO_DOCUMENTO,
+                CASE q.POBLACION_ESPECIAL
+                WHEN 1 THEN 'Personas de la tercera edad en protección de ancianatos'
+                WHEN 2 THEN 'Indigenas mayor de edad'
+                WHEN 3 THEN 'Habitante de la calle mayor de edad'
+                WHEN 4 THEN 'Habitante de la calle menor de edad'
+                WHEN 5 THEN 'Menor de edad desvinculado del conflicto armado'
+                WHEN 6 THEN 'Población infantil vulnerable en instituciones diferentes al ICBF'
+                WHEN 7 THEN 'Población infantil vulnerable a cargo del ICBF'
+                WHEN 8 THEN 'Indigena menor de edad'
+                WHEN 9 THEN 'Recien nacido con edad menor o igual a 30 días'
+                WHEN 10 THEN 'Menor de edad desplazado'
+                WHEN 11 THEN 'Mayor de edad desplazado'
+                WHEN 12 THEN 'Recluso menor de edad'
+                WHEN 13 THEN 'Recluso mayor de edad'
+                WHEN 99 THEN 'Ninguno'
+                WHEN 98 THEN 'Extranjero en tránsito'
+                END AS POBLACION_ESPECIAL, 
+                a.APELLIDO1 + ' ' + a.APELLIDO2 AS APELLIDOS,
+                a.NOMBRE1 + '  ' + a.NOMBRE2 AS NOMBRES,
+                DATEADD(DAY, 1, CAST(a.FECHANAC AS DATE)) AS FECHA_NACIMIENTO,  
+                CASE a.SEXO 
+                WHEN 2 THEN 'FEMENINO'
+                WHEN 1 THEN 'MASCULINO' 
+                ELSE 'OTRO'
+                END AS GENERO, 
+                CASE e.EMBARAZO 
+                WHEN 0 THEN 'NO'
+                WHEN 1 THEN 'EMBARAZADA' 
+                END AS EMBARAZO, 
+                CASE a.TIPDISCAP 
+                WHEN 1 THEN 'CONDUCTA'
+                WHEN 2 THEN 'COMUNICACION'
+                WHEN 3 THEN 'CUIDADO PERSONAL'
+                WHEN 4 THEN 'LOCOMOCION'
+                WHEN 5 THEN 'DISPOSICION DEL CUERPO'
+                WHEN 6 THEN 'DESTREZA'
+                WHEN 7 THEN 'SITUACION'
+                WHEN 8 THEN 'DETERMINADA ACTITUD'
+                WHEN 9 THEN 'OTRO'
+                END AS TIPO_DISCAPACIDAD, 
+                CASE a.GRDDISCAP 
+                WHEN 1 THEN 'LEVE'
+                WHEN 2 THEN 'MODERADO' 
+                WHEN 3 THEN 'SEVERA'
+                END AS GRADO_DISCAPACIDAD, 
+                a.DIRECRES AS DIRECCION_RESIDENCIA, 
+                a.TELEFRES AS TELEFONO_RESIDENCIA, 
+                a.CODBARES AS CODIGO_BARRIO, 
+                d.NOMBRE AS COMUNA, 
+                UPPER(c.NOMBRE) AS BARRIO, 
+                CASE a.ETNICO 
+                WHEN 1 THEN 'BLANCO'
+                WHEN 2 THEN 'INDIGENA'
+                WHEN 3 THEN 'AFRODECENDIENTE'
+                WHEN 4 THEN 'MESTIZO(IND-BLA)'
+                WHEN 5 THEN 'MULATO(NEG-BLA)'
+                WHEN 6 THEN 'ZAMBO(IND-NEG)'
+                WHEN 7 THEN 'GITANO(ROM)'
+                WHEN 8 THEN 'RAIZAL(SAN ANDRES)'
+                WHEN 9 THEN 'PALENQUERO'
+                ELSE 'OTRO'
+                END AS ETNICO, 
+                UPPER(b.NOMBRE) AS PAIS,  
+                h.NOMBRE AS CENTRO_PRODUCCION, 
+                f.CODIGO, 
+                CASE f.ATENDIDO 
+                WHEN 0 THEN 'NO'
+                WHEN 1 THEN 'SI'
+                END AS ATENDIDO, 
+                DATEADD(DAY, 1, CAST(f.ATENCION_FACTURA AS DATE)) AS ATENCION_FACTURA, 
+                CASE f.ESTADO 
+                WHEN  0 THEN 'DISPONIBLE'
+                WHEN  1 THEN 'CONFIRMADO'
+                WHEN  2 THEN 'INCUMPLIDA'
+                WHEN  3 THEN 'CANCELADAS'
+                WHEN  4 THEN 'CANCELADA POR EL PRESTADOR'
+                END AS ESTADO, 
+                DATEPART(DAY, a.FECHANAC) AS DIA, 
+                DATEPART(MONTH, a.FECHANAC) AS MES, 
+                DATEPART(YEAR, a.FECHANAC) AS AÑO, 
+                CONCAT(e.CANTEDAD, + ' ' +
+                CASE e.FORMEDAD 
+                WHEN 1 THEN 'AÑOS'
+                WHEN 2 THEN 'MESES'
+                WHEN 3 THEN 'DIAS'
+                WHEN 4 THEN 'HORAS'
+                END) AS EDAD,  
+                CONVERT(NVARCHAR(255), a.NUMDOCUM) AS NUMDOCUM,
+                CONVERT(varchar, CONVERT(date, ATENCION_FACTURA), 120) + '  //  '  + j.CODIGO AS DescripcionServicio,
+                j.NOMBRE AS NOMBRE_SERVICIO
+                FROM fac_m_tarjetero a 
+                INNER JOIN gen_p_paises b ON b.PAIS = a.PAIS  
+                INNER JOIN fac_p_barrio c ON c.CODIGO = a.CODBARES  
+                INNER JOIN fac_p_comuna d ON d.CODIGO = c.COMUNA  
+                INNER JOIN fac_m_factura e ON e.HISTORIA = a.HISTORIA AND e.BARRIORES = c.CODIGO
+                INNER JOIN fac_m_citas f ON f.HISTORIA = e.HISTORIA 
+                INNER JOIN fac_p_control g ON g.IPS = f.IPS AND g.IPS = e.IPS AND g.IPS = f.IPS
+                INNER JOIN fac_p_centroproduccion h ON h.CODIGO = f.CENTROPROD AND h.CODIGO = e.CENTROPRODUCCION
+                AND h.CODIGO = f.CENTROPROD  
+                INNER JOIN fac_p_cups j ON j.CODIGO = f.CODIGO_CUPS
+                INNER JOIN fac_p_poblacion_especial q ON q.POBLACION_ESPECIAL = a.POBLACION_ESPECIAL 
+                AND q.POBLACION_ESPECIAL = e.POBLACION_ESPECIAL
+                WHERE h.CODIGO = ${CODIGO}
+                AND e.CANTEDAD BETWEEN ${edadInicial} AND ${edadFinal}
+                AND f.ATENCION_FACTURA IS NOT NULL
+                AND f.CODIGO_CUPS IS NOT NULL
+                AND f.ATENDIDO = 1
+                AND f.ESTADO = 1
+                AND f.ATENCION_FACTURA BETWEEN @FechaInicial AND @FechaFinal;
+            
+            ;WITH Duplicates AS (
+                SELECT *,
+                    ROW_NUMBER() OVER (PARTITION BY NUMDOCUM, NOMBRE_SERVICIO ORDER BY DUPLICADOS) AS RowNum
+                FROM #TempResults
+            )
+            DELETE FROM Duplicates WHERE RowNum > 1;
+            
+            SELECT *
             FROM #TempResults
-        )
-        DELETE FROM Duplicates WHERE RowNum > 1;
-        
-        SELECT *
-        FROM #TempResults;
+            ORDER BY NUMDOCUM DESC
+            OFFSET ${offset} ROWS
+            FETCH NEXT ${limit} ROWS ONLY;
 
-        DROP TABLE #TempResults;`;
+    
+            SELECT COUNT(*) AS dato
+            FROM #TempResults;
+    
+            DROP TABLE #TempResults;`;
         const resul = await sequelize.query(query, {type: QueryTypes.SELECT});
-        
         
         if (!resul.length) {
             return res.status(404).json({ msg: 'No se encontraron registros'})
         }
         res.status(200).json({ 
-            data: resul
+            data: resul, 
+            total: resul[resul.length - 1].dato,
+            totalpage: Math.ceil(resul.length)/limit
         })
+        
         
     } catch (error) {
         console.log(error);

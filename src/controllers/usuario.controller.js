@@ -3,6 +3,7 @@ const USUARIO = require("../modelos/usuario.model")
 const bcrypt = require('bcryptjs');
 const PERMISO = require("../modelos/permiso.model");
 const UsuarioPermiso = require("../modelos/usuario-permiso.model");
+const { Op } = require("sequelize");
 
 
 exports.listaPerfiles = async (req, res) => {
@@ -63,6 +64,34 @@ exports.listarUsuarios = async (req, res) => {
         return res.status(404).json({msg: 'No se Encontraron Usuarios Registrados'});
         
     }
+
+    res.status(200).json({msg: 'Listado de usuarios', data: listarUsuarios})
+    } catch (error) {
+    return res.status(500).json({msg: error.message})
+    } 
+  
+}
+exports.buscarUsuarios = async (req, res) => {
+  
+    try {
+
+        let parametro = req.params.parametro;
+
+        const listarUsuarios = await USUARIO.findAll({
+            where: {
+              [Op.or]: [
+                { email: { [Op.like]: `%${parametro}%` } },
+                parseInt(parametro) != 'string' ? { cedula: { [Op.like]: `%${parametro}%` } }: {},
+                { nombres: { [Op.like]: `%${parametro}%` } },
+                { apellidos: { [Op.like]: `%${parametro}%` } },
+              ]
+            }
+        });
+        if (!listarUsuarios.length) {
+
+            return res.status(404).json({msg: 'No se Encontraron Usuarios Registrados'});
+            
+        }
 
     res.status(200).json({msg: 'Listado de usuarios', data: listarUsuarios})
     } catch (error) {
