@@ -84,6 +84,7 @@ exports.buscarUsuarios = async (req, res) => {
                 parseInt(parametro) != 'string' ? { cedula: { [Op.like]: `%${parametro}%` } }: {},
                 { nombres: { [Op.like]: `%${parametro}%` } },
                 { apellidos: { [Op.like]: `%${parametro}%` } },
+                { estado: { [Op.eq]: parametro.toLowerCase() === 'true' } }
               ]
             }
         });
